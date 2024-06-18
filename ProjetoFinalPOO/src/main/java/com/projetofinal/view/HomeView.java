@@ -9,6 +9,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HomeView extends JFrame {
 
@@ -172,6 +174,11 @@ public class HomeView extends JFrame {
         btnSalvar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!validarEmail(txtEmail.getText())) {
+                    JOptionPane.showMessageDialog(frame, "E-mail inválido. Verifique o formato do e-mail.");
+                    return;
+                }
+
                 usuario.setNomeCompleto(txtNomeCompleto.getText());
                 usuario.setDataNascimento(Date.valueOf(txtDataNascimento.getText()));
                 usuario.setGenero(txtGenero.getText());
@@ -181,7 +188,7 @@ public class HomeView extends JFrame {
 
                 usuarioDAO.updateUser(usuario);
                 JOptionPane.showMessageDialog(frame, "Dados atualizados com sucesso!");
-                frame.dispose(); 
+                frame.dispose();
             }
         });
 
@@ -198,5 +205,12 @@ public class HomeView extends JFrame {
             usuarioDAO.deleteUser(usuario.getNomeUsuario());
             JOptionPane.showMessageDialog(this, "Conta excluída com sucesso.");
         }
+    }
+    
+    private boolean validarEmail(String email) {
+        String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
 }
