@@ -1,270 +1,183 @@
 package com.projetofinal.view;
 
 import com.projetofinal.controller.UsuarioController;
+import com.projetofinal.dao.UsuarioDAO;
 import com.projetofinal.entities.Usuario;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 public class RegisterView extends JFrame {
-	private UsuarioController usuarioController;
-    private JPanel contentPane;
+
+    private UsuarioController usuarioController;
+    private UsuarioDAO usuarioDAO;
+    private Usuario usuario;
+
     private JTextField tfNome;
     private JTextField tfSobrenome;
-    private JTextField tfUsername;
-    private JTextField tfPassword;
+    private JFormattedTextField formattedTextFieldDataNascimento;
+    private JTextField tfNomeUsuario;
+    private JPasswordField pfSenha;
     private JTextField tfEmail;
-    private JFormattedTextField ftfDataNascimento;
-    private ButtonGroup btnGroupSexo;
     private JRadioButton rdbtnMasculino;
     private JRadioButton rdbtnFeminino;
     private JRadioButton rdbtnNaoInformar;
-    private JTextField tfFoto;
 
-    public RegisterView(UsuarioController usuarioController) {
+    public RegisterView(UsuarioController usuarioController, UsuarioDAO usuarioDAO, String nomeUsuario) {
         this.usuarioController = usuarioController;
-        iniciarComponentes();
+        this.usuarioDAO = usuarioDAO;
+
+        this.usuario = usuarioDAO.getUserByUsername(nomeUsuario);
+        if (this.usuario == null) {
+            this.usuario = new Usuario();
+        }
+
+        initComponents();
+        if (usuario.getNomeUsuario() != null) {
+            carregarDadosUsuario();
+        }
     }
 
-    private void iniciarComponentes() {
-        setTitle("Cadastro");
+    private void initComponents() {
+        setTitle("Cadastro de Usuário");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setBounds(100, 100, 638, 397);
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(contentPane);
-        contentPane.setLayout(null);
+        setSize(650, 500);
+        setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setBounds(10, 11, 602, 336);
-        contentPane.add(panel);
-        panel.setLayout(null);
+        JPanel panel = new JPanel(new GridLayout(9, 2, 5, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel lblCadastro = new JLabel("Cadastro ");
-        lblCadastro.setFont(new Font("Tahoma", Font.BOLD, 18));
-        lblCadastro.setBounds(263, 0, 85, 33);
-        panel.add(lblCadastro);
-
-        JLabel lblNome = new JLabel("Nome");
-        lblNome.setBounds(10, 47, 46, 14);
-        panel.add(lblNome);
-
+        panel.add(new JLabel("Nome:"));
         tfNome = new JTextField();
-        tfNome.setBounds(83, 44, 182, 20);
         panel.add(tfNome);
-        tfNome.setColumns(10);
 
-        JLabel lblSobrenome = new JLabel("Sobrenome");
-        lblSobrenome.setBounds(10, 72, 54, 14);
-        panel.add(lblSobrenome);
-
+        panel.add(new JLabel("Sobrenome:"));
         tfSobrenome = new JTextField();
-        tfSobrenome.setBounds(83, 69, 182, 20);
         panel.add(tfSobrenome);
-        tfSobrenome.setColumns(10);
 
-        JLabel lblDaTAnASC = new JLabel("Data de Nascimento");
-        lblDaTAnASC.setBounds(308, 47, 116, 14);
-        panel.add(lblDaTAnASC);
+        panel.add(new JLabel("Data de Nascimento:"));
+        try {
+            MaskFormatter formatter = new MaskFormatter("##/##/####");
+            formattedTextFieldDataNascimento = new JFormattedTextField(formatter);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        panel.add(formattedTextFieldDataNascimento);
 
-        ftfDataNascimento = new JFormattedTextField(new SimpleDateFormat("yyyy-MM-dd"));
-        ftfDataNascimento.setBounds(434, 44, 153, 20);
-        panel.add(ftfDataNascimento);
+        panel.add(new JLabel("Nome de Usuário:"));
+        tfNomeUsuario = new JTextField();
+        tfNomeUsuario.setEditable(true);
+        panel.add(tfNomeUsuario);
 
-        JLabel lblUsername = new JLabel("Nome de Usuario");
-        lblUsername.setBounds(308, 72, 105, 14);
-        panel.add(lblUsername);
+        panel.add(new JLabel("Senha:"));
+        pfSenha = new JPasswordField();
+        panel.add(pfSenha);
 
-        tfUsername = new JTextField();
-        tfUsername.setBounds(434, 69, 154, 20);
-        panel.add(tfUsername);
-        tfUsername.setColumns(10);
+        panel.add(new JLabel("E-mail:"));
+        tfEmail = new JTextField();
+        panel.add(tfEmail);
 
-        JLabel lblSenha = new JLabel("Senha");
-        lblSenha.setBounds(10, 97, 46, 14);
-        panel.add(lblSenha);
-
-        tfPassword = new JTextField();
-        tfPassword.setBounds(83, 94, 182, 20);
-        panel.add(tfPassword);
-        tfPassword.setColumns(10);
-
-        JLabel lblSexo = new JLabel("Gênero");
-        lblSexo.setBounds(10, 131, 46, 14);
-        panel.add(lblSexo);
-
-        JPanel panelSexo = new JPanel();
-        panelSexo.setBounds(83, 131, 182, 87);
-        panel.add(panelSexo);
-        panelSexo.setLayout(null);
-
-        rdbtnMasculino = new JRadioButton("Masculino");
-        rdbtnMasculino.setBounds(6, 7, 100, 23);
-        panelSexo.add(rdbtnMasculino);
-
-        rdbtnFeminino = new JRadioButton("Feminino");
-        rdbtnFeminino.setBounds(6, 33, 109, 23);
-        panelSexo.add(rdbtnFeminino);
-
-        rdbtnNaoInformar = new JRadioButton("Não Informar");
-        rdbtnNaoInformar.setBounds(6, 59, 109, 23);
-        panelSexo.add(rdbtnNaoInformar);
-
-        btnGroupSexo = new ButtonGroup();
+        JPanel panel_1 = new JPanel();
+        panel_1.setLayout(new GridLayout(3, 1));
+        panel.add(new JLabel("Gênero:"));
+        panel_1.add(rdbtnMasculino = new JRadioButton("Masculino"));
+        panel_1.add(rdbtnFeminino = new JRadioButton("Feminino"));
+        panel_1.add(rdbtnNaoInformar = new JRadioButton("Não informar"));
+        panel.add(panel_1);
+        ButtonGroup btnGroupSexo = new ButtonGroup();
         btnGroupSexo.add(rdbtnMasculino);
         btnGroupSexo.add(rdbtnFeminino);
         btnGroupSexo.add(rdbtnNaoInformar);
 
-        JLabel lblEmail = new JLabel("Email");
-        lblEmail.setBounds(308, 97, 46, 14);
-        panel.add(lblEmail);
-
-        tfEmail = new JTextField();
-        tfEmail.setBounds(434, 94, 153, 20);
-        panel.add(tfEmail);
-        tfEmail.setColumns(10);
-
-        JLabel lblFoto = new JLabel("URL da Foto");
-        lblFoto.setBounds(308, 163, 105, 14);
-        panel.add(lblFoto);
-
-        tfFoto = new JTextField();
-        tfFoto.setBounds(434, 160, 153, 20);
-        panel.add(tfFoto);
-        tfFoto.setColumns(10);
-
-        Button btnCadastrar = new Button("Cadastrar");
-        btnCadastrar.addActionListener(new ActionListener() {
+        JPanel panel_2 = new JPanel();
+        panel_2.setLayout(new GridLayout(1, 3));
+        Button button = new Button("Cadastrar");
+        button.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                cadastrarUsuario();
+                salvarDadosUsuario();
             }
         });
-        btnCadastrar.setBounds(58, 255, 94, 33);
-        panel.add(btnCadastrar);
+        panel_2.add(button);
 
-        Button btnAtualizar = new Button("Atualizar");
-        btnAtualizar.addActionListener(new ActionListener() {
+        Button button_1 = new Button("Atualizar");
+        button_1.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                atualizarUsuario();
+               
             }
         });
-        btnAtualizar.setBounds(189, 255, 94, 33);
-        panel.add(btnAtualizar);
+        panel_2.add(button_1);
 
-        Button btnExcluir = new Button("Excluir");
-        btnExcluir.addActionListener(new ActionListener() {
+        Button button_2 = new Button("Excluir");
+        button_2.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                excluirUsuario();
+               
             }
         });
-        btnExcluir.setBounds(319, 255, 94, 33);
-        panel.add(btnExcluir);
+        panel_2.add(button_2);
+
+        panel.add(panel_2);
+
+        add(panel);
     }
 
-    private void cadastrarUsuario() {
-        if (validarCampos()) {
-            Usuario usuario = criarUsuarioAPartirDosCampos();
-            usuarioController.createUser(usuario);
-            JOptionPane.showMessageDialog(this, "Cadastro realizado com sucesso!");
-            limparCampos();
-        }
-    }
-
-    private void atualizarUsuario() {
-        String username = tfUsername.getText();
-        Usuario usuario = usuarioController.getUserByUsername(username);
-        if (usuario != null) {
-            if (validarCampos()) {
-                usuario = criarUsuarioAPartirDosCampos();
-                usuarioController.updateUser(usuario);
-                JOptionPane.showMessageDialog(this, "Atualização realizada com sucesso!");
-                limparCampos();
-            }
+    private void carregarDadosUsuario() {
+        tfNome.setText(usuario.getNomeCompleto().split(" ")[0]);
+        tfSobrenome.setText(usuario.getNomeCompleto().split(" ")[1]);
+        LocalDate dataNascimento = usuario.getDataNascimento().toLocalDate();
+        formattedTextFieldDataNascimento.setText(dataNascimento.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        tfNomeUsuario.setText(usuario.getNomeUsuario());
+        pfSenha.setText(usuario.getSenha());
+        tfEmail.setText(usuario.getEmail());
+        if (usuario.getGenero().equals("Masculino")) {
+            rdbtnMasculino.setSelected(true);
+        } else if (usuario.getGenero().equals("Feminino")) {
+            rdbtnFeminino.setSelected(true);
         } else {
-            JOptionPane.showMessageDialog(this, "Usuário não encontrado!");
+            rdbtnNaoInformar.setSelected(true);
         }
     }
 
-    private void excluirUsuario() {
-        String username = tfUsername.getText();
-        Usuario usuario = usuarioController.getUserByUsername(username);
-        if (usuario != null) {
-            usuarioController.deleteUser(username);
-            JOptionPane.showMessageDialog(this, "Usuário excluído com sucesso!");
-            limparCampos();
-        } else {
-            JOptionPane.showMessageDialog(this, "Usuário não encontrado!");
-        }
-    }
-    
-    private boolean validarCampos() {
-        if (tfNome.getText().isEmpty() || tfSobrenome.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha o campo Nome e Sobrenome.");
-            return false;
-        }
-        if (ftfDataNascimento.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha o campo Data de Nascimento no formato yyyy-MM-dd.");
-            return false;
-        }
-        if (!rdbtnMasculino.isSelected() && !rdbtnFeminino.isSelected() && !rdbtnNaoInformar.isSelected()) {
-            JOptionPane.showMessageDialog(this, "Selecione o Gênero.");
-            return false;
-        }
-        if (tfEmail.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha o campo Email.");
-            return false;
-        }
-        if (tfUsername.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha o campo Nome de Usuário.");
-            return false;
-        }
-        if (tfPassword.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha o campo Senha.");
-            return false;
-        }
-        return true;
-    }
-
-    private Usuario criarUsuarioAPartirDosCampos() {
-        Usuario usuario = new Usuario();
+    private void salvarDadosUsuario() {
         usuario.setNomeCompleto(tfNome.getText() + " " + tfSobrenome.getText());
+        
         try {
-            usuario.setDataNascimento(new Date(new SimpleDateFormat("yyyy-MM-dd").parse(ftfDataNascimento.getText()).getTime()));
-        } catch (ParseException e) {
-            e.printStackTrace();
+            LocalDate dataNascimento = LocalDate.parse(formattedTextFieldDataNascimento.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            Date dataNascimentoSQL = Date.valueOf(dataNascimento);
+            usuario.setDataNascimento(dataNascimentoSQL);
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this, "Data de nascimento inválida. Use o formato dd/MM/yyyy.");
+            return;
         }
-        usuario.setGenero(verificarSelecaoRadioButtonSexo());
-        usuario.setFotoPessoal(tfFoto.getText());
+        
+        usuario.setNomeUsuario(tfNomeUsuario.getText());
+        usuario.setSenha(new String(pfSenha.getPassword()));
         usuario.setEmail(tfEmail.getText());
-        usuario.setNomeUsuario(tfUsername.getText());
-        usuario.setSenha(tfPassword.getText());
-        return usuario;
-    }
-
-    private String verificarSelecaoRadioButtonSexo() {
         if (rdbtnMasculino.isSelected()) {
-            return rdbtnMasculino.getText();
+            usuario.setGenero("Masculino");
         } else if (rdbtnFeminino.isSelected()) {
-            return rdbtnFeminino.getText();
+            usuario.setGenero("Feminino");
         } else {
-            return rdbtnNaoInformar.getText();
+            usuario.setGenero("Não informar");
         }
-    }
+     
+        if (usuario.getId() == 0) {
+            usuarioDAO.createUser(usuario);
+        } else {
+            usuarioDAO.updateUser(usuario);
+        }
 
-    private void limparCampos() {
-        tfNome.setText("");
-        tfSobrenome.setText("");
-        tfUsername.setText("");
-        tfPassword.setText("");
-        tfEmail.setText("");
-        ftfDataNascimento.setText("");
-        tfFoto.setText("");
-        btnGroupSexo.clearSelection();
+        JOptionPane.showMessageDialog(this, "Dados do usuário atualizados com sucesso!");
+        dispose();
     }
 }

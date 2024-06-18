@@ -11,14 +11,15 @@ public class UsuarioController {
     public UsuarioController(UsuarioDAO usuarioDAO) {
         this.usuarioDAO = usuarioDAO;
     }
+    
+    public UsuarioController() {
+    }
 
     public void createUser(Usuario usuario) {
-        Usuario usuairo = usuarioDAO.getUserByUsername(usuario.getNomeUsuario());
+    	Usuario usuairo = usuarioDAO.getUserByUsername(usuario.getNomeUsuario());
         if (usuairo != null) {
-            System.out.println("Erro: Já existe um usuário com o nome de usuário fornecido.");
-            return; 
+            throw new RuntimeException("Usuário já existe!");
         }
-        
         usuarioDAO.createUser(usuario);
     }
 

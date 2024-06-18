@@ -2,6 +2,8 @@ package com.projetofinal.dao;
 
 import com.projetofinal.entities.Usuario;
 
+import com.projetofinal.dao.BancoDados;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,17 +33,18 @@ public class UsuarioDAO {
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+            
         }
     }
 
     public Usuario getUserByUsername(String nomeUsuario) {
-        String sql = "SELECT * FROM usuario WHERE nom_usuario = ?";
+        String sql = "SELECT * FROM usuario WHERE nome_usuario = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, nomeUsuario);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new Usuario(
-                    rs.getInt("id"),
+                    rs.getInt("user_id"),
                     rs.getString("nome_completo"),
                     rs.getDate("data_nascimento"),
                     rs.getString("genero"),
@@ -58,15 +61,15 @@ public class UsuarioDAO {
     }
 
     public void updateUser(Usuario usuario) {
-        String sql = "UPDATE usuario SET nome_completo = ?, data_nascimento = ?, genero = ?, foto = ?, email = ?, senha = ? WHERE nome_usuario = ?";
+    	String sql = "UPDATE usuario SET nome_completo = ?, data_nascimento = ?, genero = ?, email = ?, nome_usuario = ?, senha = ? WHERE user_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, usuario.getNomeCompleto());
             stmt.setDate(2, usuario.getDataNascimento());
             stmt.setString(3, usuario.getGenero());
-            stmt.setString(4, usuario.getFotoPessoal());
-            stmt.setString(5, usuario.getEmail());
+            stmt.setString(4, usuario.getEmail());
+            stmt.setString(5, usuario.getNomeUsuario());
             stmt.setString(6, usuario.getSenha());
-            stmt.setString(7, usuario.getNomeUsuario());
+            stmt.setInt(7, usuario.getId()); // Use the user's ID to identify the record
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -122,4 +125,5 @@ public class UsuarioDAO {
         }
         return false; 
     }
+    
 }

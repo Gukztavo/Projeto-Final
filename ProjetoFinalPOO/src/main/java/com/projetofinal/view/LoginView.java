@@ -1,68 +1,86 @@
 package com.projetofinal.view;
 
 import com.projetofinal.controller.UsuarioController;
-import com.projetofinal.entities.Usuario;
 import com.projetofinal.dao.UsuarioDAO;
+import com.projetofinal.entities.Usuario;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class LoginView extends JFrame {
-    private JTextField textField;
-    private JPasswordField passwordField;
-    private UsuarioController userController;
+
+    private UsuarioController usuarioController;
     private UsuarioDAO usuarioDAO;
 
-    public LoginView(UsuarioController userController) {
-        this.userController = userController;
+    private JTextField txtUsuario;
+    private JPasswordField txtSenha;
 
+    public LoginView(UsuarioController usuarioController, UsuarioDAO usuarioDAO) {
+        this.usuarioController = usuarioController;
+        this.usuarioDAO = usuarioDAO;
+
+        initComponents();
+    }
+
+    private void initComponents() {
         setTitle("Login");
-        setSize(443, 318);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        getContentPane().setLayout(null);
+        setSize(300, 150);
+        setLocationRelativeTo(null);
 
-        JLabel userLabel = new JLabel("Usuário:");
-        userLabel.setBounds(21, 35, 68, 22);
-        getContentPane().add(userLabel);
+        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        textField = new JTextField();
-        textField.setBounds(99, 31, 213, 31);
-        getContentPane().add(textField);
+        panel.add(new JLabel("Usuário:"));
+        txtUsuario = new JTextField();
+        panel.add(txtUsuario);
 
-        JLabel passwordLabel = new JLabel("Senha:");
-        passwordLabel.setBounds(21, 81, 68, 22);
-        getContentPane().add(passwordLabel);
+        panel.add(new JLabel("Senha:"));
+        txtSenha = new JPasswordField();
+        panel.add(txtSenha);
 
-        passwordField = new JPasswordField();
-        passwordField.setBounds(99, 77, 213, 31);
-        getContentPane().add(passwordField);
-
-        JButton registerButton = new JButton("Registrar");
-        registerButton.addActionListener(new ActionListener() {
+        JButton btnLogin = new JButton("Login");
+        btnLogin.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                new RegisterView(userController).setVisible(true);
-                dispose();
+                realizarLogin();
             }
         });
-        registerButton.setBounds(21, 143, 121, 31);
-        getContentPane().add(registerButton);
+        panel.add(btnLogin);
 
-        JButton loginButton = new JButton("Login");
-        loginButton.addActionListener(new ActionListener() {
+        JButton btnRegistrar = new JButton("Registrar");
+        btnRegistrar.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
-                String username = textField.getText().trim();
-                String password = new String(passwordField.getPassword());
-
-                boolean loggedIn = usuarioDAO.validarCredenciais(username, password);
-                if (loggedIn) {
-                    JOptionPane.showMessageDialog(LoginView.this, "Login bem-sucedido!");
-                    // new TelaPrincipalView(userController).setVisible(true);
-                } else {
-                    JOptionPane.showMessageDialog(LoginView.this, "Credenciais inválidas. Verifique o usuário e senha.", "Erro de Login", JOptionPane.ERROR_MESSAGE);
-                }
+                abrirRegistro();
             }
         });
-        loginButton.setBounds(191, 143, 121, 31);
-        getContentPane().add(loginButton);
+        panel.add(btnRegistrar);
+
+        add(panel);
+    }
+
+    private void realizarLogin() {
+        String nomeUsuario = txtUsuario.getText();
+        String senha = new String(txtSenha.getPassword());
+
+        if (usuarioDAO.validarCredenciais(nomeUsuario, senha)) {
+            JOptionPane.showMessageDialog(this, "Login realizado com sucesso!");
+            Usuario usuario = usuarioDAO.getUserByUsername(nomeUsuario);
+
+            // Abrir a HomeView após o login bem-sucedido
+            new HomeView(usuarioController, usuarioDAO, usuario).setVisible(true);
+            dispose(); // Fechar a tela de login
+        } else {
+            JOptionPane.showMessageDialog(this, "Credenciais inválidas. Tente novamente.");
+        }
+    }
+
+    private void abrirRegistro() {
+        // Abrir a tela de registro (RegisterView)
+        RegisterView registerView = new RegisterView(usuarioController, usuarioDAO, "");
+        registerView.setVisible(true);
     }
 }
