@@ -1,6 +1,8 @@
 package com.projetofinal.view;
 
 import com.projetofinal.controller.UsuarioController;
+import com.projetofinal.dao.CompromissoDAO;
+import com.projetofinal.dao.ConviteDAO;
 import com.projetofinal.dao.UsuarioDAO;
 import com.projetofinal.entities.Usuario;
 
@@ -13,6 +15,8 @@ public class LoginView extends JFrame {
 
     private UsuarioController usuarioController;
     private UsuarioDAO usuarioDAO;
+    private CompromissoDAO compromissoDAO;
+    private ConviteDAO conviteDAO;
 
     private JTextField txtUsuario;
     private JPasswordField txtSenha;
@@ -71,7 +75,10 @@ public class LoginView extends JFrame {
             Usuario usuario = usuarioDAO.getUserByUsername(nomeUsuario);
 
             // Abrir a HomeView após o login bem-sucedido
-            new HomeView(usuarioController, usuarioDAO, usuario).setVisible(true);
+            EventQueue.invokeLater(() -> {
+                new HomeView(usuarioController, usuarioDAO, usuario, compromissoDAO, conviteDAO).setVisible(true);
+            });
+            
             dispose(); // Fechar a tela de login
         } else {
             JOptionPane.showMessageDialog(this, "Credenciais inválidas. Tente novamente.");
@@ -79,7 +86,6 @@ public class LoginView extends JFrame {
     }
 
     private void abrirRegistro() {
-        // Abrir a tela de registro (RegisterView)
         RegisterView registerView = new RegisterView(usuarioController, usuarioDAO, "");
         registerView.setVisible(true);
     }

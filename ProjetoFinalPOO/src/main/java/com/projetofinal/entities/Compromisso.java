@@ -15,6 +15,22 @@ public class Compromisso {
 	private List<Integer> usuariosConvidados;
 	private LocalDateTime dataHoraNotificacao;
 
+	public Compromisso(int id, String titulo, String descricao, LocalDateTime dataHoraInicio,
+			LocalDateTime dataHoraTermino, String local, int agendaId, List<Integer> usuariosConvidados,
+			LocalDateTime dataHoraNotificacao) {
+		this.id = id;
+		this.titulo = titulo;
+		this.descricao = descricao;
+		this.dataHoraInicio = dataHoraInicio;
+		this.dataHoraTermino = dataHoraTermino;
+		this.local = local;
+		this.agendaId = agendaId;
+		this.usuariosConvidados = usuariosConvidados;
+		this.dataHoraNotificacao = dataHoraNotificacao;
+	}
+	
+	public Compromisso(){}
+	
 	public int getId() {
 		return id;
 	}

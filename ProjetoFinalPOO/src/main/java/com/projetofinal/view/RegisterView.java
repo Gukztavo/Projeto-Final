@@ -56,8 +56,7 @@ public class RegisterView extends JFrame {
 		setSize(650, 550);
 		setLocationRelativeTo(null);
 
-		JPanel panel = new JPanel(new GridLayout(11, 2, 5, 5)); // Aumentei o número de linhas para acomodar todos os
-																// campos
+		JPanel panel = new JPanel(new GridLayout(11, 2, 5, 5)); 
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		panel.add(new JLabel("Nome:"));

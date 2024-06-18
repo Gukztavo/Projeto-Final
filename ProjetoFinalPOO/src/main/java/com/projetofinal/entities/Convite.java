@@ -7,6 +7,13 @@ public class Convite {
 	private int usuarioId;
 	private boolean aceito;
 
+	public Convite(int id, int compromissoId, int usuarioId, boolean aceito) {
+        this.id = id;
+        this.compromissoId = compromissoId;
+        this.usuarioId = usuarioId;
+        this.aceito = aceito;
+    }
+	
 	public int getId() {
 		return id;
 	}

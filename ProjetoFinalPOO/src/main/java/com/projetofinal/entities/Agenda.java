@@ -6,6 +6,17 @@ public class Agenda {
 	private String nome;
 	private String descricao;
 	private int usuarioId;
+	
+	public Agenda(String nome, String descricao) {
+        this.nome = nome;
+        this.descricao = descricao;
+    }
+	
+	public Agenda(int id, String nome, String descricao) {
+        this.id = id;
+        this.nome = nome;
+        this.descricao = descricao;
+    }
 
 	public int getId() {
 		return id;
