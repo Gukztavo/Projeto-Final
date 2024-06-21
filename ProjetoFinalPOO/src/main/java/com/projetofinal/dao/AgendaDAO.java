@@ -2,40 +2,47 @@ package com.projetofinal.dao;
 
 import com.projetofinal.entities.Agenda;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AgendaDAO {
+
     private Connection connection;
+    
 
     public AgendaDAO(Connection connection) {
         this.connection = connection;
     }
 
-    public void createAgenda(Agenda agenda) {
-    	
-    	
-        String sql = "INSERT INTO agenda (nome, descricao) VALUES (?, ?)";
+    
+    public void create(Agenda agenda) {
+        String sql = "INSERT INTO Agenda (nome, descricao, user_id) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, agenda.getNome());
             stmt.setString(2, agenda.getDescricao());
+            stmt.setInt(3, agenda.getUserId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public Agenda getAgendaById(int id) {
-        String sql = "SELECT * FROM agenda WHERE id = ?";
+    
+    public Agenda read(int agendaId) {
+        String sql = "SELECT * FROM Agenda WHERE agenda_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
+            stmt.setInt(1, agendaId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new Agenda(
-                    rs.getInt("id"),
+                    rs.getInt("agenda_id"),
                     rs.getString("nome"),
-                    rs.getString("descricao")
+                    rs.getString("descricao"),
+                    rs.getInt("user_id")
                 );
             }
         } catch (SQLException e) {
@@ -44,8 +51,9 @@ public class AgendaDAO {
         return null;
     }
 
-    public void updateAgenda(Agenda agenda) {
-        String sql = "UPDATE agenda SET nome = ?, descricao = ? WHERE id = ?";
+    
+    public void update(Agenda agenda) {
+        String sql = "UPDATE Agenda SET nome = ?, descricao = ? WHERE agenda_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, agenda.getNome());
             stmt.setString(2, agenda.getDescricao());
@@ -56,28 +64,29 @@ public class AgendaDAO {
         }
     }
 
-    public void deleteAgenda(int id) {
-        String sql = "DELETE FROM agenda WHERE id = ?";
+    public void delete(int agendaId) {
+        String sql = "DELETE FROM Agenda WHERE agenda_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
+            stmt.setInt(1, agendaId);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public List<Agenda> getAllAgendas() {
+    public List<Agenda> findByUserId(int userId) {
         List<Agenda> agendas = new ArrayList<>();
-        String sql = "SELECT * FROM agenda";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        String sql = "SELECT * FROM Agenda WHERE user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Agenda agenda = new Agenda(
-                    rs.getInt("id"),
+                agendas.add(new Agenda(
+                    rs.getInt("agenda_id"),
                     rs.getString("nome"),
-                    rs.getString("descricao")
-                );
-                agendas.add(agenda);
+                    rs.getString("descricao"),
+                    rs.getInt("user_id")
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();

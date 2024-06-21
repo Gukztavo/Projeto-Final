@@ -56,12 +56,12 @@ public class HomeView extends JFrame {
 		panelBotoes.add(btnConvites);
 		panelBotoes.add(btnDadosConta);
 
-		btnAgendas.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(HomeView.this, "Abrir tela de gerenciamento de agendas");
-			}
-		});
+		 btnAgendas.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new AgendaView(usuarioDAO.getConnection(), usuario).setVisible(true);
+            }
+        });
 
 		btnCompromissos.addActionListener(new ActionListener() {
 			@Override

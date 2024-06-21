@@ -74,12 +74,11 @@ public class LoginView extends JFrame {
             JOptionPane.showMessageDialog(this, "Login realizado com sucesso!");
             Usuario usuario = usuarioDAO.getUserByUsername(nomeUsuario);
 
-            // Abrir a HomeView após o login bem-sucedido
             EventQueue.invokeLater(() -> {
                 new HomeView(usuarioController, usuarioDAO, usuario, compromissoDAO, conviteDAO).setVisible(true);
             });
             
-            dispose(); // Fechar a tela de login
+            dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Credenciais inválidas. Tente novamente.");
         }

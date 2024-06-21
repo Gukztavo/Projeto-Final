@@ -125,5 +125,10 @@ public class UsuarioDAO {
         }
         return false; 
     }
+
+	public Connection getConnection() {
+		
+		return this.connection;
+	}
     
 }

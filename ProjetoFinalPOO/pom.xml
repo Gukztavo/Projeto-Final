@@ -21,6 +21,13 @@
             <version>8.0.25</version>
         </dependency>
         
+        <!-- Dependência do JCalendar -->
+        <dependency>
+		    <groupId>com.toedter</groupId>
+		    <artifactId>jcalendar</artifactId>
+		    <version>1.4</version>
+		</dependency>
+        
         <!-- Dependência do SwingX (exemplo de biblioteca Swing adicional) -->
         <dependency>
             <groupId>org.swinglabs</groupId>

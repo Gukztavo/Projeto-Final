@@ -1,117 +1,111 @@
 package com.projetofinal.view;
 
-import com.projetofinal.entities.Agenda;
-import com.projetofinal.dao.AgendaDAO;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
 import java.util.List;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+
+import com.projetofinal.controller.AgendaController;
+import com.projetofinal.dao.AgendaDAO;
+import com.projetofinal.entities.Agenda;
+import com.projetofinal.entities.Usuario;
+import com.toedter.calendar.JCalendar;
+
 public class AgendaView extends JFrame {
-    private AgendaDAO agendaDAO;
 
-    public AgendaView(AgendaDAO agendaDAO) {
-        this.agendaDAO = agendaDAO;
-        initComponents();
-    }
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JTextField txtNome;
+    private JTextField txtDescricao;
+    private JTextArea textArea;
+    private AgendaController agendaController;
+    private JCalendar calendar;
+    private Usuario usuario;
 
-    private void initComponents() {
-        setTitle("Gestão de Agendas");
+    public AgendaView(Connection connection, Usuario usuario) {
+    	this.usuario = usuario;
+        agendaController = new AgendaController(new AgendaDAO(connection), usuario);
+
+
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 400);
-        setLocationRelativeTo(null);
+        setBounds(100, 100, 650, 500);
+        contentPane = new JPanel();
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setLayout(new BorderLayout(0, 0));
+        setContentPane(contentPane);
 
-        JPanel panel = new JPanel(new BorderLayout());
-        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel panel = new JPanel();
+        contentPane.add(panel, BorderLayout.NORTH);
 
-        JButton btnCriar = new JButton("Criar Agenda");
-        JButton btnEditar = new JButton("Editar Agenda");
-        JButton btnExcluir = new JButton("Excluir Agenda");
-        JButton btnVisualizar = new JButton("Visualizar Agendas");
-
-        panelBotoes.add(btnCriar);
-        panelBotoes.add(btnEditar);
-        panelBotoes.add(btnExcluir);
-        panelBotoes.add(btnVisualizar);
-
-        btnCriar.addActionListener(e -> criarAgenda());
-        btnEditar.addActionListener(e -> editarAgenda());
-        btnExcluir.addActionListener(e -> excluirAgenda());
-        btnVisualizar.addActionListener(e -> visualizarAgendas());
-
-        panel.add(panelBotoes, BorderLayout.NORTH);
-        add(panel);
-
-        setVisible(true);
-    }
-
-    private void criarAgenda() {
-        JFrame frame = new JFrame("Criar Agenda");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(400, 300);
-        frame.setLocationRelativeTo(this);
-
-        JPanel panel = new JPanel(new GridLayout(3, 2, 5, 5));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        panel.add(new JLabel("Nome:"));
-        JTextField txtNome = new JTextField();
+        txtNome = new JTextField();
         panel.add(txtNome);
+        txtNome.setColumns(10);
 
-        panel.add(new JLabel("Descrição:"));
-        JTextField txtDescricao = new JTextField();
+        txtDescricao = new JTextField();
         panel.add(txtDescricao);
+        txtDescricao.setColumns(10);
 
-        JButton btnSalvar = new JButton("Salvar");
-        btnSalvar.addActionListener(e -> {
-            String nome = txtNome.getText();
-            String descricao = txtDescricao.getText();
-
-            if (!nome.isEmpty()) {
-                Agenda agenda = new Agenda(nome, descricao);
-                agendaDAO.createAgenda(agenda);
-                JOptionPane.showMessageDialog(frame, "Agenda criada com sucesso!");
-                frame.dispose();
-            } else {
-                JOptionPane.showMessageDialog(frame, "Nome da agenda é obrigatório.");
+        JButton btnAdd = new JButton("Adicionar");
+        btnAdd.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String nome = txtNome.getText();
+                String descricao = txtDescricao.getText();
+                agendaController.createAgenda(nome, descricao);
+                updateTextArea();
             }
         });
+        panel.add(btnAdd);
 
-        panel.add(new JLabel());
-        panel.add(btnSalvar);
+        JButton btnUpdate = new JButton("Atualizar");
+        btnUpdate.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int agendaId = usuario.getId();
+                String nome = txtNome.getText();
+                String descricao = txtDescricao.getText();
+                agendaController.updateAgenda(agendaId, nome, descricao);
+                updateTextArea();
+            }
+        });
+        panel.add(btnUpdate);
 
-        frame.add(panel);
-        frame.setVisible(true);
+        JButton btnDelete = new JButton("Excluir");
+        btnDelete.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int agendaId = usuario.getId();
+                agendaController.deleteAgenda(agendaId);
+                updateTextArea();
+            }
+        });
+        panel.add(btnDelete);
+
+        JScrollPane scrollPane = new JScrollPane();
+        contentPane.add(scrollPane, BorderLayout.CENTER);
+
+        textArea = new JTextArea();
+        scrollPane.setViewportView(textArea);
+
+        calendar = new JCalendar();
+        contentPane.add(calendar, BorderLayout.SOUTH);
+
+        updateTextArea();
     }
 
-    private void editarAgenda() {
-        // Similar to criarAgenda, but with existing agenda data
-    }
-
-    private void excluirAgenda() {
-        // Logic to delete an agenda
-    }
-
-    private void visualizarAgendas() {
-        List<Agenda> agendas = agendaDAO.getAllAgendas();
-        StringBuilder agendaList = new StringBuilder();
-
+    private void updateTextArea() {
+        List<Agenda> agendas = agendaController.getAllAgendas(usuario.getId());
+        textArea.setText("");
         for (Agenda agenda : agendas) {
-            agendaList.append("Nome: ").append(agenda.getNome()).append("\n");
-            agendaList.append("Descrição: ").append(agenda.getDescricao()).append("\n\n");
+            textArea.append("ID: " + agenda.getId() + ", Nome: " + agenda.getNome() + ", Descrição: "
+                    + agenda.getDescricao() + "\n");
         }
-
-        JTextArea textArea = new JTextArea(agendaList.toString());
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-
-        JFrame frame = new JFrame("Visualizar Agendas");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(400, 300);
-        frame.setLocationRelativeTo(this);
-        frame.add(scrollPane);
-        frame.setVisible(true);
     }
 }
