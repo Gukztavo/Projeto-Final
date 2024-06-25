@@ -11,9 +11,10 @@ public class AgendaController {
     private Usuario usuario;
     private int userId;
 
-    public AgendaController(AgendaDAO agendaDAO, Usuario usuario) {
+    public AgendaController(AgendaDAO agendaDAO, int userId) {
         this.agendaDAO = agendaDAO;
         this.usuario = usuario;
+        this.userId = userId;
     }
 
     public void createAgenda(String nome, String descricao) {
@@ -21,6 +22,13 @@ public class AgendaController {
         agendaDAO.create(agenda);
     }
 
+    public Agenda getagendaByAgenda(String nomeAgenda) {
+        Agenda agenda = agendaDAO.getAgendaByAgenda(nomeAgenda);
+        if (agenda == null) {
+            System.out.println("Erro: nao foi encontrada agenda com esse nome");
+        }
+        return agenda;
+    }
     public Agenda getAgenda(int agendaId) {
         return agendaDAO.read(agendaId);
     }
@@ -32,6 +40,10 @@ public class AgendaController {
 
     public void deleteAgenda(int agendaId) {
         agendaDAO.delete(agendaId);
+    }
+    
+    public Agenda readAgenda(int agendaId) {
+        return agendaDAO.read(agendaId);
     }
 
     public List<Agenda> getAllAgendas(int i) {

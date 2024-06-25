@@ -1,19 +1,15 @@
 package com.projetofinal.entities;
 
+import java.sql.Date;
+
 public class Convite {
 
 	private int id;
-	private int compromissoId;
-	private int usuarioId;
-	private boolean aceito;
+	private int idUsuarioConvidado;
+	private int idCompromisso;
+	private String status;
+	private Date dataConvite;
 
-	public Convite(int id, int compromissoId, int usuarioId, boolean aceito) {
-        this.id = id;
-        this.compromissoId = compromissoId;
-        this.usuarioId = usuarioId;
-        this.aceito = aceito;
-    }
-	
 	public int getId() {
 		return id;
 	}
@@ -22,27 +18,36 @@ public class Convite {
 		this.id = id;
 	}
 
-	public int getCompromissoId() {
-		return compromissoId;
+	public int getIdUsuarioConvidado() {
+		return idUsuarioConvidado;
 	}
 
-	public void setCompromissoId(int compromissoId) {
-		this.compromissoId = compromissoId;
+	public void setIdUsuarioConvidado(int idUsuarioConvidado) {
+		this.idUsuarioConvidado = idUsuarioConvidado;
 	}
 
-	public int getUsuarioId() {
-		return usuarioId;
+	public int getIdCompromisso() {
+		return idCompromisso;
 	}
 
-	public void setUsuarioId(int usuarioId) {
-		this.usuarioId = usuarioId;
+	public void setIdCompromisso(int idCompromisso) {
+		this.idCompromisso = idCompromisso;
 	}
 
-	public boolean isAceito() {
-		return aceito;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setAceito(boolean aceito) {
-		this.aceito = aceito;
+	public void setStatus(String status) {
+		this.status = status;
 	}
+
+	public Date getDataConvite() {
+		return dataConvite;
+	}
+
+	public void setDataConvite(Date dataConvite) {
+		this.dataConvite = dataConvite;
+	}
+
 }

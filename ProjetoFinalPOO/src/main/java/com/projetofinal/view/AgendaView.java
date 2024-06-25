@@ -1,6 +1,8 @@
 package com.projetofinal.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -13,7 +15,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 import com.projetofinal.controller.AgendaController;
 import com.projetofinal.dao.AgendaDAO;
@@ -27,41 +32,60 @@ public class AgendaView extends JFrame {
     private JPanel contentPane;
     private JTextField txtNome;
     private JTextField txtDescricao;
-    private JTextArea textArea;
     private AgendaController agendaController;
     private JCalendar calendar;
     private Usuario usuario;
+    private AgendaDAO agendaDAO;
+    private JTextArea textArea;
 
-    public AgendaView(Connection connection, Usuario usuario) {
-    	this.usuario = usuario;
-        agendaController = new AgendaController(new AgendaDAO(connection), usuario);
+    public AgendaView(Connection connection, Usuario usuario){
+    	
+    	try {
+            // Aplicar tema Metal
+        	UIManager.setLookAndFeel(new NimbusLookAndFeel());
 
+            // Customize NimbusLookAndFeel
+            UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
+            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
+            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
+            // UIManager.setLookAndFeel(new WindowsLookAndFeel());
+        } catch (Exception e) {
+            System.err.println("Erro ao aplicar tema: " + e.getMessage());
+        }
+        
+        this.usuario = usuario;
+        this.agendaDAO = new AgendaDAO(connection);
+        this.agendaController = new AgendaController(agendaDAO, usuario.getId());
 
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        initComponents();
+    }
+    
+    private void initComponents() {
+    	setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setBounds(100, 100, 650, 500);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(new BorderLayout(0, 0));
         setContentPane(contentPane);
+        contentPane.setLayout(null);
 
         JPanel panel = new JPanel();
-        contentPane.add(panel, BorderLayout.NORTH);
+        panel.setBounds(5, 0, 624, 33);
+        contentPane.add(panel);
 
         txtNome = new JTextField();
+        txtNome.setText("Nome");
         panel.add(txtNome);
         txtNome.setColumns(10);
 
         txtDescricao = new JTextField();
+        txtDescricao.setText("Descricao");
         panel.add(txtDescricao);
         txtDescricao.setColumns(10);
 
         JButton btnAdd = new JButton("Adicionar");
         btnAdd.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String nome = txtNome.getText();
-                String descricao = txtDescricao.getText();
-                agendaController.createAgenda(nome, descricao);
-                updateTextArea();
+                abrirRegistro(0);
             }
         });
         panel.add(btnAdd);
@@ -69,11 +93,8 @@ public class AgendaView extends JFrame {
         JButton btnUpdate = new JButton("Atualizar");
         btnUpdate.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int agendaId = usuario.getId();
-                String nome = txtNome.getText();
-                String descricao = txtDescricao.getText();
-                agendaController.updateAgenda(agendaId, nome, descricao);
-                updateTextArea();
+                int agendaId = Integer.parseInt(JOptionPane.showInputDialog("ID da agenda a ser atualizada:"));
+                abrirRegistro(agendaId); 
             }
         });
         panel.add(btnUpdate);
@@ -81,30 +102,40 @@ public class AgendaView extends JFrame {
         JButton btnDelete = new JButton("Excluir");
         btnDelete.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int agendaId = usuario.getId();
+                int agendaId = Integer.parseInt(JOptionPane.showInputDialog("ID da agenda que deseja excluir:"));
                 agendaController.deleteAgenda(agendaId);
                 updateTextArea();
             }
         });
         panel.add(btnDelete);
 
-        JScrollPane scrollPane = new JScrollPane();
-        contentPane.add(scrollPane, BorderLayout.CENTER);
-
-        textArea = new JTextArea();
-        scrollPane.setViewportView(textArea);
-
         calendar = new JCalendar();
-        contentPane.add(calendar, BorderLayout.SOUTH);
+        calendar.setBounds(5, 303, 624, 153);
+        contentPane.add(calendar);
+        
+        JPanel panel_1 = new JPanel();
+        panel_1.setBounds(10, 44, 609, 248);
+        contentPane.add(panel_1);
+        panel_1.setLayout(null);
+        
+        textArea = new JTextArea();
+        textArea.setBounds(10, 5, 589, 219);
+        panel_1.add(textArea);
+        textArea.setText("");
 
         updateTextArea();
     }
 
-    private void updateTextArea() {
+    private void abrirRegistro(int agendaId) {
+        RegisterAgendaView registerView = new RegisterAgendaView(agendaController, agendaDAO, agendaId, this);
+        registerView.setVisible(true);
+    }
+
+    public void updateTextArea() {
         List<Agenda> agendas = agendaController.getAllAgendas(usuario.getId());
-        textArea.setText("");
+        textArea.setText(""); // Limpar a �rea de texto antes de adicionar novos dados
         for (Agenda agenda : agendas) {
-            textArea.append("ID: " + agenda.getId() + ", Nome: " + agenda.getNome() + ", Descrição: "
+            textArea.append("ID: " + agenda.getId() + ", Nome: " + agenda.getNome() + ", Descri��o: "
                     + agenda.getDescricao() + "\n");
         }
     }

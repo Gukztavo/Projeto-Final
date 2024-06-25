@@ -4,6 +4,8 @@ import com.projetofinal.dao.CompromissoDAO;
 import com.projetofinal.entities.Compromisso;
 
 import javax.swing.*;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,7 +16,21 @@ import java.util.List;
 public class CompromissoView extends JFrame {
     private CompromissoDAO compromissoDAO;
 
-    public CompromissoView(CompromissoDAO compromissoDAO) {
+    public CompromissoView(CompromissoDAO compromissoDAO){
+    	
+    	try {
+            // Aplicar tema Metal
+        	UIManager.setLookAndFeel(new NimbusLookAndFeel());
+
+            // Customize NimbusLookAndFeel
+            UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
+            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
+            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
+            // UIManager.setLookAndFeel(new WindowsLookAndFeel());
+        } catch (Exception e) {
+            System.err.println("Erro ao aplicar tema: " + e.getMessage());
+        }
+        
         this.compromissoDAO = compromissoDAO;
         initComponents();
     }

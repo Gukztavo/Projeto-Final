@@ -7,11 +7,15 @@ public class Agenda {
     private int userId;
 
     // Construtor
+    
     public Agenda(int id, String nome, String descricao, int userId) {
         this.id = id;
         this.nome = nome;
         this.descricao = descricao;
         this.userId = userId;
+    }
+    public Agenda() {
+      
     }
 
     // Getters e Setters

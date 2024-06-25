@@ -5,6 +5,7 @@ import com.projetofinal.dao.UsuarioDAO;
 import com.projetofinal.entities.Usuario;
 
 import javax.swing.*;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -36,6 +37,20 @@ public class RegisterView extends JFrame {
 	private JRadioButton rdbtnNaoInformar;
 
 	public RegisterView(UsuarioController usuarioController, UsuarioDAO usuarioDAO, String nomeUsuario) {
+		
+		try {
+            // Aplicar tema Metal
+        	UIManager.setLookAndFeel(new NimbusLookAndFeel());
+
+            // Customize NimbusLookAndFeel
+            UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
+            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
+            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
+            // UIManager.setLookAndFeel(new WindowsLookAndFeel());
+        } catch (Exception e) {
+            System.err.println("Erro ao aplicar tema: " + e.getMessage());
+        }
+		
 		this.usuarioController = usuarioController;
 		this.usuarioDAO = usuarioDAO;
 
