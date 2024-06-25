@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/projetoFinal", "root", "umasenhaponto");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/projetoFinal", "root", "");
         } catch (SQLException e) {
             e.printStackTrace();
             return;

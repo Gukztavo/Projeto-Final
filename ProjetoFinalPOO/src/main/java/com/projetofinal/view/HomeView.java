@@ -44,7 +44,7 @@ public class HomeView extends JFrame {
         this.usuarioController = usuarioController;
         this.usuarioDAO = usuarioDAO;
         this.usuario = usuario;
-        this.compromissoDAO = compromissoDAO;
+        this.compromissoDAO = new CompromissoDAO();
         this.conviteDAO = conviteDAO;
         initComponents();
     }
@@ -83,7 +83,7 @@ public class HomeView extends JFrame {
         btnCompromissos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new CompromissoView(compromissoDAO);
+                new CompromissoView(usuarioDAO.getConnection(), usuario).setVisible(true);
             }
         });
 
