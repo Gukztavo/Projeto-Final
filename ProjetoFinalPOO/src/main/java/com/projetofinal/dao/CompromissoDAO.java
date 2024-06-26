@@ -88,6 +88,36 @@ public class CompromissoDAO {
         }
         return null;
     }
+    
+    public List<Compromisso> getCompromissosByUsuarioId(int idUsuario) {
+        List<Compromisso> compromissos = new ArrayList<>();
+        String sql = "SELECT c.* FROM compromisso c " +
+                     "JOIN compromisso_convidado cc ON c.compromisso_id = cc.compromisso_id " +
+                     "WHERE cc.user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idUsuario);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                List<Integer> usuariosConvidados = getUsuariosConvidadosByCompromissoId(rs.getInt("compromisso_id"));
+
+                Compromisso compromisso = new Compromisso(
+                    rs.getInt("compromisso_id"),
+                    rs.getString("titulo"),
+                    rs.getString("descricao"),
+                    rs.getTimestamp("data_hora_inicio").toLocalDateTime(),
+                    rs.getTimestamp("data_hora_fim").toLocalDateTime(),
+                    rs.getString("local"),
+                    rs.getInt("agenda_id"),
+                    usuariosConvidados,
+                    rs.getTimestamp("data_hora_notificacao").toLocalDateTime()
+                );
+                compromissos.add(compromisso);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return compromissos;
+    }
 
     public void updateCompromisso(Compromisso compromisso) {
         String sql = "UPDATE compromisso SET titulo = ?, descricao = ?, data_hora_inicio = ?, data_hora_fim = ?, local = ?, agenda_id = ?, data_hora_notificacao = ? WHERE compromisso_id = ?";

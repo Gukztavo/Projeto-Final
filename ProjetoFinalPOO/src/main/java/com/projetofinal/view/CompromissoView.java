@@ -1,7 +1,9 @@
 package com.projetofinal.view;
 
 import com.projetofinal.dao.CompromissoDAO;
+import com.projetofinal.dao.ConviteDAO;
 import com.projetofinal.entities.Compromisso;
+import com.projetofinal.entities.Convite;
 import com.projetofinal.entities.Usuario;
 
 import javax.swing.*;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 public class CompromissoView extends JFrame {
     private CompromissoDAO compromissoDAO;
+    private ConviteDAO conviteDAO;
     private Usuario usuario;
     private JTextArea textArea;
 
@@ -35,6 +38,7 @@ public class CompromissoView extends JFrame {
 
         this.usuario = usuario;
         this.compromissoDAO = new CompromissoDAO(connection);
+        this.conviteDAO = new ConviteDAO(connection);
         initComponents();
     }
 
@@ -50,14 +54,17 @@ public class CompromissoView extends JFrame {
         JButton btnCriar = new JButton("Criar Compromisso");
         JButton btnEditar = new JButton("Editar Compromisso");
         JButton btnExcluir = new JButton("Excluir Compromisso");
+        JButton btnEnviarConvite = new JButton("Enviar Convite"); // Novo botão
 
         panelBotoes.add(btnCriar);
         panelBotoes.add(btnEditar);
         panelBotoes.add(btnExcluir);
+        panelBotoes.add(btnEnviarConvite); // Adicionar o novo botão
 
         btnCriar.addActionListener(e -> criarCompromisso());
         btnEditar.addActionListener(e -> editarCompromisso());
         btnExcluir.addActionListener(e -> excluirCompromisso());
+        btnEnviarConvite.addActionListener(e -> enviarConvite()); // Adicionar listener para o novo botão
 
         panel.add(panelBotoes, BorderLayout.NORTH);
 
@@ -162,7 +169,7 @@ public class CompromissoView extends JFrame {
     }
 
     private void visualizarCompromissos() {
-        List<Compromisso> compromissos = compromissoDAO.getAllCompromissos();
+        List<Compromisso> compromissos = compromissoDAO.getCompromissosByUsuarioId(usuario.getId());
         StringBuilder compromissoList = new StringBuilder();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -300,6 +307,41 @@ public class CompromissoView extends JFrame {
                         compromissoDAO.deleteCompromisso(compromissoId);
                         JOptionPane.showMessageDialog(this, "Compromisso excluído com sucesso!");
                         visualizarCompromissos();
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Compromisso não encontrado com o ID especificado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "ID inválido. Por favor, digite um número.", "Erro de ID", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void enviarConvite() {
+        String compromissoIdStr = JOptionPane.showInputDialog(this, "Digite o ID do compromisso para o qual deseja enviar um convite:", "Enviar Convite", JOptionPane.PLAIN_MESSAGE);
+
+        if (compromissoIdStr != null && !compromissoIdStr.trim().isEmpty()) {
+            try {
+                int compromissoId = Integer.parseInt(compromissoIdStr);
+                Compromisso compromisso = compromissoDAO.getCompromissoById(compromissoId);
+
+                if (compromisso != null) {
+                    String destinatarioIdStr = JOptionPane.showInputDialog(this, "Digite o ID do usuário destinatário:", "Enviar Convite", JOptionPane.PLAIN_MESSAGE);
+
+                    if (destinatarioIdStr != null && !destinatarioIdStr.trim().isEmpty()) {
+                        int destinatarioId = Integer.parseInt(destinatarioIdStr);
+
+                        Convite convite = new Convite();
+                        convite.setIdUsuarioConvidado(destinatarioId);
+                        convite.setIdCompromisso(compromissoId);
+                        convite.setStatus("PENDENTE");
+                        convite.setDataConvite(new java.sql.Date(System.currentTimeMillis()));
+
+                        conviteDAO.criarConvite(convite);
+
+                        JOptionPane.showMessageDialog(this, "Convite enviado com sucesso!");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "ID do destinatário inválido.", "Erro", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
                     JOptionPane.showMessageDialog(this, "Compromisso não encontrado com o ID especificado.", "Erro", JOptionPane.ERROR_MESSAGE);

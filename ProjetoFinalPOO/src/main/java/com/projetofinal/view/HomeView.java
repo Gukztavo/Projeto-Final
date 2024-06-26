@@ -5,6 +5,8 @@ import com.projetofinal.controller.UsuarioController;
 import com.projetofinal.dao.CompromissoDAO;
 import com.projetofinal.dao.ConviteDAO;
 import com.projetofinal.dao.UsuarioDAO;
+import com.projetofinal.entities.Compromisso;
+import com.projetofinal.entities.Convite;
 import com.projetofinal.entities.Usuario;
 
 import javax.swing.*;
@@ -14,6 +16,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +33,7 @@ public class HomeView extends JFrame {
                     CompromissoDAO compromissoDAO, ConviteDAO conviteDAO) {
 
         try {
-            // Aplicar tema Metal
+            // Aplicar tema Nimbus
             UIManager.setLookAndFeel(new NimbusLookAndFeel());
 
             // Customize NimbusLookAndFeel
@@ -44,7 +47,7 @@ public class HomeView extends JFrame {
         this.usuarioController = usuarioController;
         this.usuarioDAO = usuarioDAO;
         this.usuario = usuario;
-        this.compromissoDAO = new CompromissoDAO();
+        this.compromissoDAO = compromissoDAO;
         this.conviteDAO = conviteDAO;
         initComponents();
     }
@@ -90,8 +93,7 @@ public class HomeView extends JFrame {
         btnConvites.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ConviteController conviteController = new ConviteController(usuarioDAO.getConnection());
-                new ConviteView(conviteController, usuario.getId()).setVisible(true);
+                gerenciarConvites();
             }
         });
 
@@ -261,4 +263,80 @@ public class HomeView extends JFrame {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
+
+    private void gerenciarConvites() {
+        JFrame frame = new JFrame("Gerenciar Convites");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(600, 400);
+        frame.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        JTextArea textArea = new JTextArea();
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        JButton btnAceitar = new JButton("Aceitar Convite");
+        JButton btnRecusar = new JButton("Recusar Convite");
+        JPanel panelBotoes = new JPanel(new FlowLayout());
+        panelBotoes.add(btnAceitar);
+        panelBotoes.add(btnRecusar);
+        panel.add(panelBotoes, BorderLayout.SOUTH);
+
+        frame.add(panel);
+        frame.setVisible(true);
+
+        conviteDAO = new ConviteDAO(usuarioDAO.getConnection());
+        compromissoDAO = new CompromissoDAO(usuarioDAO.getConnection());
+
+        // Método para atualizar a lista de convites no JTextArea
+        Runnable atualizarListaConvites = () -> {
+            List<Convite> convites = conviteDAO.getConvitesPorUsuario(usuario.getId());
+            StringBuilder convitesList = new StringBuilder();
+            for (Convite convite : convites) {
+                convitesList.append("ID: ").append(convite.getId()).append("\n");
+                convitesList.append("Compromisso ID: ").append(convite.getIdCompromisso()).append("\n");
+                convitesList.append("Status: ").append(convite.getStatus()).append("\n\n");
+            }
+            textArea.setText(convitesList.toString());
+        };
+
+        // Atualiza a lista de convites ao abrir a tela
+        atualizarListaConvites.run();
+
+        btnAceitar.addActionListener(e -> {
+            String conviteIdStr = JOptionPane.showInputDialog(frame, "Digite o ID do convite a ser aceito:", "Aceitar Convite", JOptionPane.PLAIN_MESSAGE);
+            if (conviteIdStr != null && !conviteIdStr.trim().isEmpty()) {
+                try {
+                    int conviteId = Integer.parseInt(conviteIdStr);
+                    conviteDAO.atualizarStatusConvite(conviteId, "ACEITO");
+                    Convite convite = conviteDAO.getConvitesPorUsuario(usuario.getId()).stream().filter(c -> c.getId() == conviteId).findFirst().orElse(null);
+                    if (convite != null) {
+                        Compromisso compromisso = compromissoDAO.getCompromissoById(convite.getIdCompromisso());
+                        compromisso.getUsuariosConvidados().add(usuario.getId());
+                        compromissoDAO.updateCompromisso(compromisso);
+                        JOptionPane.showMessageDialog(frame, "Convite aceito e compromisso adicionado à sua agenda.");
+                        atualizarListaConvites.run();
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "ID inválido. Por favor, digite um número.", "Erro de ID", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        btnRecusar.addActionListener(e -> {
+            String conviteIdStr = JOptionPane.showInputDialog(frame, "Digite o ID do convite a ser recusado:", "Recusar Convite", JOptionPane.PLAIN_MESSAGE);
+            if (conviteIdStr != null && !conviteIdStr.trim().isEmpty()) {
+                try {
+                    int conviteId = Integer.parseInt(conviteIdStr);
+                    conviteDAO.atualizarStatusConvite(conviteId, "RECUSADO");
+                    JOptionPane.showMessageDialog(frame, "Convite recusado.");
+                    atualizarListaConvites.run();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "ID inválido. Por favor, digite um número.", "Erro de ID", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+    }
+
 }
