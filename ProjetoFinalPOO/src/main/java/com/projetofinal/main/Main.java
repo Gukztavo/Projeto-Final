@@ -1,6 +1,8 @@
 package com.projetofinal.main;
 
 import com.projetofinal.controller.UsuarioController;
+import com.projetofinal.dao.CompromissoDAO;
+import com.projetofinal.dao.ConviteDAO;
 import com.projetofinal.dao.UsuarioDAO;
 import com.projetofinal.view.LoginView;
 
@@ -22,11 +24,13 @@ public class Main {
 
         UsuarioController usuarioController = new UsuarioController();
         UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
+        CompromissoDAO compromissoDAO = new CompromissoDAO(connection);
+        ConviteDAO conviteDAO = new ConviteDAO(connection); // Assuming you have a ConviteDAO class
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new LoginView(usuarioController, usuarioDAO).setVisible(true);
+                new LoginView(usuarioController, usuarioDAO, compromissoDAO, conviteDAO).setVisible(true);
             }
         });
     }

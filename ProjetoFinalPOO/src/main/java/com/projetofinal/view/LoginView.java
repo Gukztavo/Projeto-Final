@@ -5,6 +5,7 @@ import com.projetofinal.dao.CompromissoDAO;
 import com.projetofinal.dao.ConviteDAO;
 import com.projetofinal.dao.UsuarioDAO;
 import com.projetofinal.entities.Usuario;
+import com.projetofinal.thread.NotificacaoCompromisso;
 
 import javax.swing.*;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
@@ -23,23 +24,23 @@ public class LoginView extends JFrame {
     private JTextField txtUsuario;
     private JPasswordField txtSenha;
 
-    public LoginView(UsuarioController usuarioController, UsuarioDAO usuarioDAO) {
+    public LoginView(UsuarioController usuarioController, UsuarioDAO usuarioDAO, CompromissoDAO compromissoDAO, ConviteDAO conviteDAO) {
     	
     	try {
-            // Aplicar tema Metal
         	UIManager.setLookAndFeel(new NimbusLookAndFeel());
 
-            // Customize NimbusLookAndFeel
-            UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
-            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
-            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
-            // UIManager.setLookAndFeel(new WindowsLookAndFeel());
+            UIManager.put("nimbusBase", new Color(255, 255, 255));
+            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); 
+            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14));
+            
         } catch (Exception e) {
             System.err.println("Erro ao aplicar tema: " + e.getMessage());
         }
     	
-        this.usuarioController = usuarioController;
-        this.usuarioDAO = usuarioDAO;
+    	 this.usuarioController = usuarioController;
+         this.usuarioDAO = usuarioDAO;
+         this.compromissoDAO = compromissoDAO;
+         this.conviteDAO = conviteDAO;
 
         initComponents();
     }
@@ -92,6 +93,10 @@ public class LoginView extends JFrame {
             EventQueue.invokeLater(() -> {
                 new HomeView(usuarioController, usuarioDAO, usuario, compromissoDAO, conviteDAO).setVisible(true);
             });
+            
+            NotificacaoCompromisso checker = new NotificacaoCompromisso(usuario.getId(), compromissoDAO);
+            Thread checkerThread = new Thread(checker);
+            checkerThread.start();
             
             dispose();
         } else {

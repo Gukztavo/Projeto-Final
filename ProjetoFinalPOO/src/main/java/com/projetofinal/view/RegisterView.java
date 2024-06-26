@@ -15,6 +15,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,7 +140,12 @@ public class RegisterView extends JFrame {
 		tfNomeUsuario.setText(usuario.getNomeUsuario());
 		pfSenha.setText(usuario.getSenha());
 		tfEmail.setText(usuario.getEmail());
-		tfUrlFoto.setText(usuario.getFotoPessoal());
+		if (usuario.getFotoPessoal() != null && usuario.getFotoPessoal().length > 0) {
+	        String fotoBase64 = Base64.getEncoder().encodeToString(usuario.getFotoPessoal());
+	        tfUrlFoto.setText(fotoBase64);
+	    } else {
+	        tfUrlFoto.setText("");
+	    }
 		if (usuario.getGenero().equals("Masculino")) {
 			rdbtnMasculino.setSelected(true);
 		} else if (usuario.getGenero().equals("Feminino")) {
@@ -150,49 +156,69 @@ public class RegisterView extends JFrame {
 	}
 
 	private void salvarDadosUsuario() {
-		if (!validarEmail(tfEmail.getText())) {
-			JOptionPane.showMessageDialog(this, "E-mail inválido. Verifique o formato do e-mail.");
-			return;
-		}
+	    if (!validarEmail(tfEmail.getText())) {
+	        JOptionPane.showMessageDialog(this, "E-mail inválido. Verifique o formato do e-mail.");
+	        return;
+	    }
 
-		String nomeUsuario = tfNomeUsuario.getText().trim();
-		if (usuarioDAO.getUserByUsername(nomeUsuario) != null && !nomeUsuario.equals(usuario.getNomeUsuario())) {
-			JOptionPane.showMessageDialog(this, "Nome de usuário já registrado. Escolha outro nome de usuário.",
-					"Cadastro", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
+	    String nomeUsuario = tfNomeUsuario.getText().trim();
+	    if (usuarioDAO.getUserByUsername(nomeUsuario) != null && !nomeUsuario.equals(usuario.getNomeUsuario())) {
+	        JOptionPane.showMessageDialog(this, "Nome de usuário já registrado. Escolha outro nome de usuário.",
+	                "Cadastro", JOptionPane.ERROR_MESSAGE);
+	        return;
+	    }
 
-		usuario.setNomeCompleto(tfNome.getText() + " " + tfSobrenome.getText());
+	    usuario.setNomeCompleto(tfNome.getText() + " " + tfSobrenome.getText());
 
-		try {
-			LocalDate dataNascimento = LocalDate.parse(formattedTextFieldDataNascimento.getText(),
-					DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-			Date dataNascimentoSQL = Date.valueOf(dataNascimento);
-			usuario.setDataNascimento(dataNascimentoSQL);
-		} catch (DateTimeParseException e) {
-			JOptionPane.showMessageDialog(this, "Data de nascimento inválida. Use o formato dd/MM/yyyy.");
-			return;
-		}
-		usuario.setNomeUsuario(tfNomeUsuario.getText());
-		usuario.setSenha(new String(pfSenha.getPassword()));
-		usuario.setEmail(tfEmail.getText());
-		usuario.setFotoPessoal(tfUrlFoto.getText());
-		if (rdbtnMasculino.isSelected()) {
-			usuario.setGenero("Masculino");
-		} else if (rdbtnFeminino.isSelected()) {
-			usuario.setGenero("Feminino");
-		} else {
-			usuario.setGenero("Não informar");
-		}
+	    try {
+	        LocalDate dataNascimento = LocalDate.parse(formattedTextFieldDataNascimento.getText(),
+	                DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+	        Date dataNascimentoSQL = Date.valueOf(dataNascimento);
+	        usuario.setDataNascimento(dataNascimentoSQL);
+	    } catch (DateTimeParseException e) {
+	        JOptionPane.showMessageDialog(this, "Data de nascimento inválida. Use o formato dd/MM/yyyy.");
+	        return;
+	    }
+	    usuario.setNomeUsuario(tfNomeUsuario.getText());
+	    usuario.setSenha(new String(pfSenha.getPassword()));
+	    usuario.setEmail(tfEmail.getText());
 
-		if (usuario.getId() == 0) {
-			usuarioDAO.createUser(usuario);
-		} else {
-			usuarioDAO.updateUser(usuario);
-		}
+	    String fotoBase64 = tfUrlFoto.getText();
+	    if (!fotoBase64.isEmpty()) {
+	        byte[] fotoBytes = Base64.getDecoder().decode(fotoBase64);
+	        usuario.setFotoPessoal(fotoBytes);
+	    }
 
-		JOptionPane.showMessageDialog(this, "Dados do usuário salvos com sucesso!");
-		dispose();
+	    if (rdbtnMasculino.isSelected()) {
+	        usuario.setGenero("Masculino");
+	    } else if (rdbtnFeminino.isSelected()) {
+	        usuario.setGenero("Feminino");
+	    } else {
+	        usuario.setGenero("Não informar");
+	    }
+
+	    if (usuario.getId() == 0) {
+	        usuarioDAO.createUser(usuario);
+	    } else {
+	        usuarioDAO.updateUser(usuario);
+	    }
+
+	    JOptionPane.showMessageDialog(this, "Dados do usuário salvos com sucesso!");
+	    dispose();
+	}
+	
+	public class Base64Utils {
+
+	    private Base64Utils() {
+	    }
+
+	    public String encode(byte[] data) {
+	        return Base64.getEncoder().encodeToString(data);
+	    }
+
+	    public byte[] decode(String base64String) {
+	        return Base64.getDecoder().decode(base64String);
+	    }
 	}
 
 	private boolean validarEmail(String email) {

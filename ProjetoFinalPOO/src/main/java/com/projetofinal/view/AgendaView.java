@@ -41,10 +41,8 @@ public class AgendaView extends JFrame {
     public AgendaView(Connection connection, Usuario usuario){
     	
     	try {
-            // Aplicar tema Metal
         	UIManager.setLookAndFeel(new NimbusLookAndFeel());
 
-            // Customize NimbusLookAndFeel
             UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
             UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
             UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
@@ -133,7 +131,7 @@ public class AgendaView extends JFrame {
 
     public void updateTextArea() {
         List<Agenda> agendas = agendaController.getAllAgendas(usuario.getId());
-        textArea.setText(""); // Limpar a �rea de texto antes de adicionar novos dados
+        textArea.setText("");
         for (Agenda agenda : agendas) {
             textArea.append("ID: " + agenda.getId() + ", Nome: " + agenda.getNome() + ", Descri��o: "
                     + agenda.getDescricao() + "\n");

@@ -26,7 +26,7 @@ public class UsuarioDAO {
             stmt.setString(1, usuario.getNomeCompleto());
             stmt.setDate(2, usuario.getDataNascimento());
             stmt.setString(3, usuario.getGenero());
-            stmt.setString(4, usuario.getFotoPessoal());
+            stmt.setBytes(4, usuario.getFotoPessoal());
             stmt.setString(5, usuario.getEmail());
             stmt.setString(6, usuario.getNomeUsuario());
             stmt.setString(7, usuario.getSenha());
@@ -48,7 +48,7 @@ public class UsuarioDAO {
                     rs.getString("nome_completo"),
                     rs.getDate("data_nascimento"),
                     rs.getString("genero"),
-                    rs.getString("foto"),
+                    rs.getBytes("foto"),
                     rs.getString("email"),
                     rs.getString("nome_usuario"),
                     rs.getString("senha")
@@ -61,7 +61,7 @@ public class UsuarioDAO {
     }
 
     public void updateUser(Usuario usuario) {
-    	String sql = "UPDATE usuario SET nome_completo = ?, data_nascimento = ?, genero = ?, email = ?, nome_usuario = ?, senha = ? WHERE user_id = ?";
+        String sql = "UPDATE usuario SET nome_completo =?, data_nascimento =?, genero =?, email =?, nome_usuario =?, senha =?, foto =? WHERE user_id =?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, usuario.getNomeCompleto());
             stmt.setDate(2, usuario.getDataNascimento());
@@ -69,7 +69,8 @@ public class UsuarioDAO {
             stmt.setString(4, usuario.getEmail());
             stmt.setString(5, usuario.getNomeUsuario());
             stmt.setString(6, usuario.getSenha());
-            stmt.setInt(7, usuario.getId()); // Use the user's ID to identify the record
+            stmt.setBytes(7, usuario.getFotoPessoal()); 
+            stmt.setInt(8, usuario.getId()); 
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,7 +98,7 @@ public class UsuarioDAO {
                     rs.getString("nome_completo"),
                     rs.getDate("data_nascimento"),
                     rs.getString("genero"),
-                    rs.getString("foto"),
+                    rs.getBytes("foto"),
                     rs.getString("email"),
                     rs.getString("nome_usuario"),
                     rs.getString("senha")
@@ -129,6 +130,20 @@ public class UsuarioDAO {
 	public Connection getConnection() {
 		
 		return this.connection;
+	}
+	
+	public byte[] getUserImage(String username) {
+	    String sql = "SELECT foto FROM usuario WHERE nome_usuario = ?";
+	    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+	        stmt.setString(1, username);
+	        ResultSet rs = stmt.executeQuery();
+	        if (rs.next()) {
+	            return rs.getBytes("foto");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return null;
 	}
     
 }
