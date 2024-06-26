@@ -25,7 +25,7 @@ public class Main {
         UsuarioController usuarioController = new UsuarioController();
         UsuarioDAO usuarioDAO = new UsuarioDAO(connection);
         CompromissoDAO compromissoDAO = new CompromissoDAO(connection);
-        ConviteDAO conviteDAO = new ConviteDAO(connection); // Assuming you have a ConviteDAO class
+        ConviteDAO conviteDAO = new ConviteDAO(connection); 
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override

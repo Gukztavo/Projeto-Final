@@ -10,6 +10,9 @@ import javax.swing.text.MaskFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Date;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -127,6 +130,23 @@ public class RegisterView extends JFrame {
 				salvarDadosUsuario();
 			}
 		});
+		
+		JButton btnSelectImage = new JButton("Selecionar Imagem");
+		panel.add(btnSelectImage);
+
+		btnSelectImage.addActionListener(new ActionListener() {
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		        JFileChooser fileChooser = new JFileChooser();
+		        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		        int returnValue = fileChooser.showOpenDialog(RegisterView.this);
+		        if (returnValue == JFileChooser.APPROVE_OPTION) {
+		            File selectedFile = fileChooser.getSelectedFile();
+		            byte[] imageBytes = readFile(selectedFile);
+		            usuario.setFotoPessoal(imageBytes);
+		        }
+		    }
+		});
 		panel.add(button);
 
 		add(panel);
@@ -226,5 +246,16 @@ public class RegisterView extends JFrame {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(email);
 		return matcher.matches();
+	}
+	
+	private byte[] readFile(File file) {
+	    try (FileInputStream fis = new FileInputStream(file)) {
+	        byte[] buffer = new byte[(int) file.length()];
+	        fis.read(buffer);
+	        return buffer;
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        return null;
+	    }
 	}
 }
