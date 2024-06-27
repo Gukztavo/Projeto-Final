@@ -9,3 +9,5 @@
   <li>Envie um convite no menu de compromissos</li>
   <li>Visualize e edite os seus dados da conta</li>
 </ul>
+
+<span>Carlos Eduardo da Silva | Gustavo Vicente Ozorio | Matheus José Vieira dos Santos</span>
