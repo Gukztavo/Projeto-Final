@@ -102,4 +102,14 @@ public class Compromisso {
 	public void setDataHoraNotificacao(LocalDateTime dataHoraNotificacao) {
 		this.dataHoraNotificacao = dataHoraNotificacao;
 	}
+
+	@Override
+	public String toString() {
+		return "Compromisso [id=" + id + ", titulo=" + titulo + ", descricao=" + descricao + ", dataHoraInicio="
+				+ dataHoraInicio + ", dataHoraTermino=" + dataHoraTermino + ", local=" + local + ", agendaId="
+				+ agendaId + ", usuariosConvidados=" + usuariosConvidados + ", dataHoraNotificacao="
+				+ dataHoraNotificacao + "]";
+	}
+	
+	
 }

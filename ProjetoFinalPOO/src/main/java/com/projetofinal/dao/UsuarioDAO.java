@@ -59,9 +59,32 @@ public class UsuarioDAO {
         }
         return null;
     }
+    
+    public Usuario getUserById(int id) {
+        String sql = "SELECT * FROM usuario WHERE user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Usuario(
+                    rs.getInt("user_id"),
+                    rs.getString("nome_completo"),
+                    rs.getDate("data_nascimento"),
+                    rs.getString("genero"),
+                    rs.getBytes("foto"),
+                    rs.getString("email"),
+                    rs.getString("nome_usuario"),
+                    rs.getString("senha")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public void updateUser(Usuario usuario) {
-        String sql = "UPDATE usuario SET nome_completo =?, data_nascimento =?, genero =?, email =?, nome_usuario =?, senha =?, foto =? WHERE user_id =?";
+    	String sql = "UPDATE usuario SET nome_completo = ?, data_nascimento = ?, genero = ?, email = ?, nome_usuario = ?, senha = ? WHERE user_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, usuario.getNomeCompleto());
             stmt.setDate(2, usuario.getDataNascimento());
@@ -69,8 +92,7 @@ public class UsuarioDAO {
             stmt.setString(4, usuario.getEmail());
             stmt.setString(5, usuario.getNomeUsuario());
             stmt.setString(6, usuario.getSenha());
-            stmt.setBytes(7, usuario.getFotoPessoal()); 
-            stmt.setInt(8, usuario.getId()); 
+            stmt.setInt(7, usuario.getId()); // Use the user's ID to identify the record
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
