@@ -59,6 +59,29 @@ public class UsuarioDAO {
         }
         return null;
     }
+    
+    public Usuario getUserById(int id) {
+        String sql = "SELECT * FROM usuario WHERE user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new Usuario(
+                    rs.getInt("user_id"),
+                    rs.getString("nome_completo"),
+                    rs.getDate("data_nascimento"),
+                    rs.getString("genero"),
+                    rs.getString("foto"),
+                    rs.getString("email"),
+                    rs.getString("nome_usuario"),
+                    rs.getString("senha")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public void updateUser(Usuario usuario) {
     	String sql = "UPDATE usuario SET nome_completo = ?, data_nascimento = ?, genero = ?, email = ?, nome_usuario = ?, senha = ? WHERE user_id = ?";

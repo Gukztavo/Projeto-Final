@@ -1,7 +1,9 @@
 package com.projetofinal.view;
 
+import com.projetofinal.dao.AgendaDAO;
 import com.projetofinal.dao.CompromissoDAO;
 import com.projetofinal.dao.ConviteDAO;
+import com.projetofinal.dao.UsuarioDAO;
 import com.projetofinal.entities.Compromisso;
 import com.projetofinal.entities.Convite;
 import com.projetofinal.entities.Usuario;
@@ -14,12 +16,15 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CompromissoView extends JFrame {
     private CompromissoDAO compromissoDAO;
     private ConviteDAO conviteDAO;
+    private AgendaDAO agendaDAO;
+    private UsuarioDAO usuarioDAO;
     private Usuario usuario;
     private JTextArea textArea;
 
@@ -39,6 +44,8 @@ public class CompromissoView extends JFrame {
         this.usuario = usuario;
         this.compromissoDAO = new CompromissoDAO(connection);
         this.conviteDAO = new ConviteDAO(connection);
+        this.agendaDAO = new AgendaDAO(connection);
+        this.usuarioDAO = new UsuarioDAO(connection);
         initComponents();
     }
 
@@ -108,11 +115,11 @@ public class CompromissoView extends JFrame {
         JTextField txtLocal = new JTextField();
         panel.add(txtLocal);
 
-        panel.add(new JLabel("ID da Agenda:"));
+        panel.add(new JLabel("Nome da Agenda:"));
         JTextField txtAgendaId = new JTextField();
         panel.add(txtAgendaId);
 
-        panel.add(new JLabel("ID dos Usuários Convidados (separados por vírgula):"));
+        panel.add(new JLabel("Nome dos Usuários Convidados (separados por vírgula):"));
         JTextField txtUsuariosConvidados = new JTextField();
         panel.add(txtUsuariosConvidados);
 
@@ -130,11 +137,15 @@ public class CompromissoView extends JFrame {
                 LocalDateTime dataHoraInicio = LocalDateTime.parse(txtDataHoraInicio.getText(), formatter);
                 LocalDateTime dataHoraTermino = LocalDateTime.parse(txtDataHoraTermino.getText(), formatter);
                 String local = txtLocal.getText();
-                int agendaId = Integer.parseInt(txtAgendaId.getText());
-                List<Integer> usuariosConvidados = List.of(txtUsuariosConvidados.getText().split(","))
+                int agendaId = agendaDAO.getAgendaByAgenda(txtAgendaId.getText()).getId();
+                List<String> usuariosConvidados = List.of(txtUsuariosConvidados.getText().split(","))
                         .stream()
-                        .map(Integer::parseInt)
                         .collect(Collectors.toList());
+                List<Integer> usuariosConvidadosId = new ArrayList<>();
+                for (String nome : usuariosConvidados) {
+                	usuariosConvidadosId.add(usuarioDAO.getUserByUsername(nome).getId());
+                }
+                
                 LocalDateTime dataHoraNotificacao = LocalDateTime.parse(txtDataHoraNotificacao.getText(), formatter);
 
                 Compromisso compromisso = new Compromisso();
@@ -144,9 +155,9 @@ public class CompromissoView extends JFrame {
                 compromisso.setDataHoraTermino(dataHoraTermino);
                 compromisso.setLocal(local);
                 compromisso.setAgendaId(agendaId);
-                compromisso.setUsuariosConvidados(usuariosConvidados);
+                compromisso.setUsuariosConvidados(usuariosConvidadosId);
                 compromisso.setDataHoraNotificacao(dataHoraNotificacao);
-
+                
                 compromissoDAO.createCompromisso(compromisso);
                 JOptionPane.showMessageDialog(frame, "Compromisso criado com sucesso!");
                 frame.dispose();
@@ -181,8 +192,16 @@ public class CompromissoView extends JFrame {
             compromissoList.append("Data e Hora de Início: ").append(compromisso.getDataHoraInicio().format(formatter)).append("\n");
             compromissoList.append("Data e Hora de Término: ").append(compromisso.getDataHoraTermino().format(formatter)).append("\n");
             compromissoList.append("Local: ").append(compromisso.getLocal()).append("\n");
-            compromissoList.append("ID da Agenda: ").append(compromisso.getAgendaId()).append("\n");
-            compromissoList.append("Usuários Convidados: ").append(compromisso.getUsuariosConvidados().toString()).append("\n");
+            compromissoList.append("Nome da Agenda: ").append(agendaDAO.read(compromisso.getAgendaId()).getNome()).append("\n");
+            
+            List<Integer> usuariosConvidadosId = compromisso.getUsuariosConvidados();
+            List<String> usuariosConvidados = new ArrayList<String>();
+            
+            for (Integer id : usuariosConvidadosId) {
+            	usuariosConvidados.add(usuarioDAO.getUserById(id).getNomeUsuario());
+            }
+           
+            compromissoList.append("Usuários Convidados: ").append(usuariosConvidados).append("\n");
             compromissoList.append("Data e Hora da Notificação: ").append(compromisso.getDataHoraNotificacao().format(formatter)).append("\n\n");
         }
 

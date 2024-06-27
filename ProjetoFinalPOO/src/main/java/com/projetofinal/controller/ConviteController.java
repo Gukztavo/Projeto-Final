@@ -23,7 +23,7 @@ public class ConviteController {
     }
 
     public List<Convite> listarConvites(int idUsuario) throws SQLException {
-        return conviteDAO.listarConvites(idUsuario);
+        return conviteDAO.getConvitesPorUsuario(idUsuario);
     }
 
     public void responderConvite(int idConvite, String resposta) throws SQLException {
