@@ -5,7 +5,10 @@ import com.projetofinal.controller.UsuarioController;
 import com.projetofinal.dao.CompromissoDAO;
 import com.projetofinal.dao.ConviteDAO;
 import com.projetofinal.dao.UsuarioDAO;
+import com.projetofinal.entities.Compromisso;
+import com.projetofinal.entities.Convite;
 import com.projetofinal.entities.Usuario;
+import com.projetofinal.thread.NotificacaoCompromisso;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -18,9 +21,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.List;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,9 +55,14 @@ public class HomeView extends JFrame {
 		this.usuarioController = usuarioController;
 		this.usuarioDAO = usuarioDAO;
 		this.usuario = usuario;
-		this.compromissoDAO = new CompromissoDAO();
+		this.compromissoDAO = new CompromissoDAO(usuarioDAO.getConnection());
 		this.conviteDAO = conviteDAO;
 		initComponents();
+		iniciarVerificacaoDeCompromissos();
+		NotificacaoCompromisso checker = new NotificacaoCompromisso(usuario.getId(), compromissoDAO);
+		Thread checkerThread = new Thread(checker);
+		checkerThread.setDaemon(true); 
+		checkerThread.start();
 	}
 
 	private void initComponents() {
@@ -94,12 +104,11 @@ public class HomeView extends JFrame {
 		});
 
 		btnConvites.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				ConviteController conviteController = new ConviteController(usuarioDAO.getConnection());
-				new ConviteView(conviteController, usuario.getId()).setVisible(true);
-			}
-		});
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gerenciarConvites();
+            }
+        });
 
 		btnDadosConta.addActionListener(new ActionListener() {
 			@Override
@@ -176,131 +185,128 @@ public class HomeView extends JFrame {
 	}
 
 	private void atualizarUsuario(Usuario usuario) {
-	    JFrame frame = new JFrame("Atualizar Dados do Usuário");
-	    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	    frame.setSize(400, 350);
-	    frame.setLocationRelativeTo(this);
+		JFrame frame = new JFrame("Atualizar Dados do Usuário");
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setSize(400, 350);
+		frame.setLocationRelativeTo(this);
 
-	    JPanel panel = new JPanel(new GridLayout(9, 2, 5, 5));
-	    panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		JPanel panel = new JPanel(new GridLayout(9, 2, 5, 5));
+		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-	    panel.add(new JLabel("Nome Completo:"));
-	    JTextField txtNomeCompleto = new JTextField(usuario.getNomeCompleto());
-	    panel.add(txtNomeCompleto);
+		panel.add(new JLabel("Nome Completo:"));
+		JTextField txtNomeCompleto = new JTextField(usuario.getNomeCompleto());
+		panel.add(txtNomeCompleto);
 
-	    panel.add(new JLabel("Data de Nascimento:"));
-	    JTextField txtDataNascimento = new JTextField(usuario.getDataNascimento().toString());
-	    panel.add(txtDataNascimento);
+		panel.add(new JLabel("Data de Nascimento:"));
+		JTextField txtDataNascimento = new JTextField(usuario.getDataNascimento().toString());
+		panel.add(txtDataNascimento);
 
-	    panel.add(new JLabel("Gênero:"));
-	    JPanel panelGenero = new JPanel(new GridLayout(1, 3));
-	    JRadioButton rdbtnMasculino = new JRadioButton("Masculino");
-	    JRadioButton rdbtnFeminino = new JRadioButton("Feminino");
-	    JRadioButton rdbtnNaoInformar = new JRadioButton("Não informar");
-	    ButtonGroup btnGroupSexo = new ButtonGroup();
-	    btnGroupSexo.add(rdbtnMasculino);
-	    btnGroupSexo.add(rdbtnFeminino);
-	    btnGroupSexo.add(rdbtnNaoInformar);
-	    panelGenero.add(rdbtnMasculino);
-	    panelGenero.add(rdbtnFeminino);
-	    panelGenero.add(rdbtnNaoInformar);
+		panel.add(new JLabel("Gênero:"));
+		JPanel panelGenero = new JPanel(new GridLayout(1, 3));
+		JRadioButton rdbtnMasculino = new JRadioButton("Masculino");
+		JRadioButton rdbtnFeminino = new JRadioButton("Feminino");
+		JRadioButton rdbtnNaoInformar = new JRadioButton("Não informar");
+		ButtonGroup btnGroupSexo = new ButtonGroup();
+		btnGroupSexo.add(rdbtnMasculino);
+		btnGroupSexo.add(rdbtnFeminino);
+		btnGroupSexo.add(rdbtnNaoInformar);
+		panelGenero.add(rdbtnMasculino);
+		panelGenero.add(rdbtnFeminino);
+		panelGenero.add(rdbtnNaoInformar);
 
-	    if (usuario.getGenero().equals("Masculino")) {
-	        rdbtnMasculino.setSelected(true);
-	    } else if (usuario.getGenero().equals("Feminino")) {
-	        rdbtnFeminino.setSelected(true);
-	    } else {
-	        rdbtnNaoInformar.setSelected(true);
-	    }
+		if (usuario.getGenero().equals("Masculino")) {
+			rdbtnMasculino.setSelected(true);
+		} else if (usuario.getGenero().equals("Feminino")) {
+			rdbtnFeminino.setSelected(true);
+		} else {
+			rdbtnNaoInformar.setSelected(true);
+		}
 
-	    panel.add(panelGenero);
+		panel.add(panelGenero);
 
-	    panel.add(new JLabel("E-mail:"));
-	    JTextField txtEmail = new JTextField(usuario.getEmail());
-	    panel.add(txtEmail);
+		panel.add(new JLabel("E-mail:"));
+		JTextField txtEmail = new JTextField(usuario.getEmail());
+		panel.add(txtEmail);
 
-	    panel.add(new JLabel("Nome de Usuário:"));
-	    JTextField txtNomeUsuario = new JTextField(usuario.getNomeUsuario());
-	    panel.add(txtNomeUsuario);
+		panel.add(new JLabel("Nome de Usuário:"));
+		JTextField txtNomeUsuario = new JTextField(usuario.getNomeUsuario());
+		panel.add(txtNomeUsuario);
 
-	    panel.add(new JLabel("Senha:"));
-	    JTextField txtSenha = new JTextField(usuario.getSenha());
-	    panel.add(txtSenha);
+		panel.add(new JLabel("Senha:"));
+		JTextField txtSenha = new JTextField(usuario.getSenha());
+		panel.add(txtSenha);
 
-	    panel.add(new JLabel("URL da Foto:"));
-	    String urlFoto = usuario.getFotoPessoal() != null ? Base64.getEncoder().encodeToString(usuario.getFotoPessoal())
-	            : "";
-	    JTextField txtUrlFoto = new JTextField(urlFoto);
-	    panel.add(txtUrlFoto);
-	    
-	    JButton btnEscolherImagem = new JButton("Escolher Imagem");
-	    btnEscolherImagem.addActionListener(new ActionListener() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            JFileChooser fileChooser = new JFileChooser();
-	            int option = fileChooser.showOpenDialog(frame);
-	            if (option == JFileChooser.APPROVE_OPTION) {
-	                File file = fileChooser.getSelectedFile();
-	                try {
-	                    byte[] fileContent = Files.readAllBytes(file.toPath());
-	                    usuario.setFotoPessoal(fileContent); // Update the usuario object with new image data
-	                    txtUrlFoto.setText(Base64.getEncoder().encodeToString(fileContent)); // Update the text field with the new image data
-	                    JOptionPane.showMessageDialog(frame, "Imagem selecionada com sucesso!");
-	                } catch (IOException ex) {
-	                    ex.printStackTrace();
-	                    JOptionPane.showMessageDialog(frame, "Erro ao ler o arquivo de imagem.");
-	                }
-	            }
-	        }
-	    });
-	    panel.add(btnEscolherImagem);
+		panel.add(new JLabel("URL da Foto:"));
+		String urlFoto = usuario.getFotoPessoal() != null ? Base64.getEncoder().encodeToString(usuario.getFotoPessoal())
+				: "";
+		JTextField txtUrlFoto = new JTextField(urlFoto);
+		panel.add(txtUrlFoto);
 
-	    JButton btnSalvar = new JButton("Salvar");
-	    btnSalvar.addActionListener(new ActionListener() {
-	        @Override
-	        public void actionPerformed(ActionEvent e) {
-	            if (!validarEmail(txtEmail.getText())) {
-	                JOptionPane.showMessageDialog(frame, "E-mail inválido. Verifique o formato do e-mail.");
-	                return;
-	            }
+		JButton btnEscolherImagem = new JButton("Escolher Imagem");
+		btnEscolherImagem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				int option = fileChooser.showOpenDialog(frame);
+				if (option == JFileChooser.APPROVE_OPTION) {
+					File file = fileChooser.getSelectedFile();
+					try {
+						byte[] fileContent = Files.readAllBytes(file.toPath());
+						usuario.setFotoPessoal(fileContent); 
+						txtUrlFoto.setText(Base64.getEncoder().encodeToString(fileContent)); 
+						JOptionPane.showMessageDialog(frame, "Imagem selecionada com sucesso!");
+					} catch (IOException ex) {
+						ex.printStackTrace();
+						JOptionPane.showMessageDialog(frame, "Erro ao ler o arquivo de imagem.");
+					}
+				}
+			}
+		});
+		panel.add(btnEscolherImagem);
 
-	            usuario.setNomeCompleto(txtNomeCompleto.getText());
-	            usuario.setDataNascimento(Date.valueOf(txtDataNascimento.getText()));
-	            usuario.setGenero(rdbtnMasculino.isSelected() ? "Masculino"
-	                    : rdbtnFeminino.isSelected() ? "Feminino" : "Não informar");
-	            usuario.setEmail(txtEmail.getText());
-	            usuario.setNomeUsuario(txtNomeUsuario.getText());
-	            usuario.setSenha(txtSenha.getText());
+		JButton btnSalvar = new JButton("Salvar");
+		btnSalvar.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!validarEmail(txtEmail.getText())) {
+					JOptionPane.showMessageDialog(frame, "E-mail inválido. Verifique o formato do e-mail.");
+					return;
+				}
 
-	            String urlFoto = txtUrlFoto.getText();
-	            if (urlFoto != null && !urlFoto.isEmpty()) {
-	                try {
-	                    byte[] fotoBytes = Base64.getDecoder().decode(urlFoto);
-	                    usuario.setFotoPessoal(fotoBytes);
-	                } catch (IllegalArgumentException ex) {
-	                    ex.printStackTrace();
-	                }
-	            } else {
-	                usuario.setFotoPessoal(null);
-	            }
+				usuario.setNomeCompleto(txtNomeCompleto.getText());
+				usuario.setDataNascimento(Date.valueOf(txtDataNascimento.getText()));
+				usuario.setGenero(rdbtnMasculino.isSelected() ? "Masculino"
+						: rdbtnFeminino.isSelected() ? "Feminino" : "Não informar");
+				usuario.setEmail(txtEmail.getText());
+				usuario.setNomeUsuario(txtNomeUsuario.getText());
+				usuario.setSenha(txtSenha.getText());
 
-	            usuarioDAO.updateUser(usuario);
-	            JOptionPane.showMessageDialog(frame, "Dados atualizados com sucesso!");
+				String urlFoto = txtUrlFoto.getText();
+				if (urlFoto != null && !urlFoto.isEmpty()) {
+					try {
+						byte[] fotoBytes = Base64.getDecoder().decode(urlFoto);
+						usuario.setFotoPessoal(fotoBytes);
+					} catch (IllegalArgumentException ex) {
+						ex.printStackTrace();
+					}
+				} else {
+					usuario.setFotoPessoal(null);
+				}
 
-	            exibirDadosUsuario(); 
+				usuarioDAO.updateUser(usuario);
+				JOptionPane.showMessageDialog(frame, "Dados atualizados com sucesso!");
 
-	            frame.dispose();
-	        }
-	    });
+				exibirDadosUsuario();
 
-	    panel.add(btnSalvar);
+				frame.dispose();
+			}
+		});
 
-	    frame.add(panel);
-	    frame.setVisible(true);
+		panel.add(btnSalvar);
+
+		frame.add(panel);
+		frame.setVisible(true);
 	}
-
-
-
 
 	private boolean validarEmail(String email) {
 		String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
@@ -309,19 +315,83 @@ public class HomeView extends JFrame {
 		return matcher.matches();
 	}
 
-	private ImageIcon loadImageIcon(byte[] imageData, int width, int height) {
-	    if (imageData != null && imageData.length > 0) {
-	        try {
-	            BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageData));
-	            Image scaledImage = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-	            return new ImageIcon(scaledImage);
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    }
-	    return null;
-	}
+	private void gerenciarConvites() {
+		JFrame frame = new JFrame("Gerenciar Convites");
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setSize(600, 400);
+		frame.setLocationRelativeTo(this);
 
+		JPanel panel = new JPanel(new BorderLayout());
+		JTextArea textArea = new JTextArea();
+		textArea.setEditable(false);
+		JScrollPane scrollPane = new JScrollPane(textArea);
+		panel.add(scrollPane, BorderLayout.CENTER);
+
+		JButton btnAceitar = new JButton("Aceitar Convite");
+		JButton btnRecusar = new JButton("Recusar Convite");
+		JPanel panelBotoes = new JPanel(new FlowLayout());
+		panelBotoes.add(btnAceitar);
+		panelBotoes.add(btnRecusar);
+		panel.add(panelBotoes, BorderLayout.SOUTH);
+
+		frame.add(panel);
+		frame.setVisible(true);
+
+		conviteDAO = new ConviteDAO(usuarioDAO.getConnection());
+		compromissoDAO = new CompromissoDAO(usuarioDAO.getConnection());
+
+		Runnable atualizarListaConvites = () -> {
+			List<Convite> convites = conviteDAO.getConvitesPorUsuario(usuario.getId());
+			StringBuilder convitesList = new StringBuilder();
+			for (Convite convite : convites) {
+				convitesList.append("ID: ").append(convite.getId()).append("\n");
+				convitesList.append("Compromisso ID: ").append(convite.getIdCompromisso()).append("\n");
+				convitesList.append("Status: ").append(convite.getStatus()).append("\n\n");
+			}
+			textArea.setText(convitesList.toString());
+		};
+
+		atualizarListaConvites.run();
+
+		btnAceitar.addActionListener(e -> {
+			String conviteIdStr = JOptionPane.showInputDialog(frame, "Digite o ID do convite a ser aceito:",
+					"Aceitar Convite", JOptionPane.PLAIN_MESSAGE);
+			if (conviteIdStr != null && !conviteIdStr.trim().isEmpty()) {
+				try {
+					int conviteId = Integer.parseInt(conviteIdStr);
+					conviteDAO.atualizarStatusConvite(conviteId, "ACEITO");
+					Convite convite = conviteDAO.getConvitesPorUsuario(usuario.getId()).stream()
+							.filter(c -> c.getId() == conviteId).findFirst().orElse(null);
+					if (convite != null) {
+						Compromisso compromisso = compromissoDAO.getCompromissoById(convite.getIdCompromisso());
+						compromisso.getUsuariosConvidados().add(usuario.getId());
+						compromissoDAO.updateCompromisso(compromisso);
+						JOptionPane.showMessageDialog(frame, "Convite aceito e compromisso adicionado à sua agenda.");
+						atualizarListaConvites.run();
+					}
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(frame, "ID inválido. Por favor, digite um número.", "Erro de ID",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+
+		btnRecusar.addActionListener(e -> {
+			String conviteIdStr = JOptionPane.showInputDialog(frame, "Digite o ID do convite a ser recusado:",
+					"Recusar Convite", JOptionPane.PLAIN_MESSAGE);
+			if (conviteIdStr != null && !conviteIdStr.trim().isEmpty()) {
+				try {
+					int conviteId = Integer.parseInt(conviteIdStr);
+					conviteDAO.atualizarStatusConvite(conviteId, "RECUSADO");
+					JOptionPane.showMessageDialog(frame, "Convite recusado.");
+					atualizarListaConvites.run();
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(frame, "ID inválido. Por favor, digite um número.", "Erro de ID",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+	}
 
 	private void excluirUsuario(Usuario usuario) {
 		int confirmacao = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja excluir sua conta?",
@@ -354,5 +424,32 @@ public class HomeView extends JFrame {
 		} else {
 			JOptionPane.showMessageDialog(this, "Nenhuma imagem disponível.");
 		}
+	}
+	
+	private void iniciarVerificacaoDeCompromissos() {
+		Thread thread = new Thread(() -> {
+			while (true) {
+				List<Compromisso> compromissosProximos = compromissoDAO.getUpcomingCompromissosByUserId(usuario.getId());
+				LocalDateTime now = LocalDateTime.now();
+				for (Compromisso compromisso : compromissosProximos) {
+					if (compromisso.getDataHoraNotificacao().isBefore(now.plusMinutes(15))){
+						SwingUtilities.invokeLater(() -> {
+							exibirNotificacao(compromisso);
+						});
+					}
+				}
+				try {
+					Thread.sleep(60000); 
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		thread.start();
+	}
+
+	private void exibirNotificacao(Compromisso compromisso) {
+		JOptionPane.showMessageDialog(this, "Você tem um compromisso próximo: " + compromisso.getDescricao(), 
+           "Notificação de Compromisso", JOptionPane.INFORMATION_MESSAGE);
 	}
 }

@@ -13,9 +13,6 @@ public class CompromissoDAO {
         this.connection = connection;
     }
     
-    public CompromissoDAO() {
-        
-    }
 
     public Connection getConnection() {
         return connection;
@@ -87,6 +84,36 @@ public class CompromissoDAO {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public List<Compromisso> getCompromissosByUsuarioId(int idUsuario) {
+        List<Compromisso> compromissos = new ArrayList<>();
+        String sql = "SELECT c.* FROM compromisso c " +
+                     "JOIN compromisso_convidado cc ON c.compromisso_id = cc.compromisso_id " +
+                     "WHERE cc.user_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, idUsuario);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                List<Integer> usuariosConvidados = getUsuariosConvidadosByCompromissoId(rs.getInt("compromisso_id"));
+
+                Compromisso compromisso = new Compromisso(
+                    rs.getInt("compromisso_id"),
+                    rs.getString("titulo"),
+                    rs.getString("descricao"),
+                    rs.getTimestamp("data_hora_inicio").toLocalDateTime(),
+                    rs.getTimestamp("data_hora_fim").toLocalDateTime(),
+                    rs.getString("local"),
+                    rs.getInt("agenda_id"),
+                    usuariosConvidados,
+                    rs.getTimestamp("data_hora_notificacao").toLocalDateTime()
+                );
+                compromissos.add(compromisso);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return compromissos;
     }
 
     public void updateCompromisso(Compromisso compromisso) {
@@ -184,25 +211,50 @@ public class CompromissoDAO {
     
     public List<Compromisso> getUpcomingCompromissosByUserId(int userId) {
         List<Compromisso> compromissos = new ArrayList<>();
-        String sql = "SELECT * FROM compromisso WHERE agenda_id = ? AND data_hora_inicio > CURRENT_TIMESTAMP";
+        String query = "SELECT c.* FROM compromisso c\r\n"
+        		+ "LEFT JOIN agenda a on c.agenda_id = a.agenda_id\r\n"
+        		+ "WHERE a.user_id = ? \r\n"
+        		+ "AND data_hora_inicio > NOW()";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Compromisso compromisso = new Compromisso();
+                compromisso.setId(rs.getInt("compromisso_id"));
+                compromisso.setTitulo(rs.getString("titulo"));
+                compromisso.setDescricao(rs.getString("descricao"));
+                compromisso.setDataHoraInicio(rs.getTimestamp("data_hora_inicio").toLocalDateTime());
+                compromisso.setDataHoraTermino(rs.getTimestamp("data_hora_fim").toLocalDateTime());
+                compromisso.setLocal(rs.getString("local"));
+                compromisso.setAgendaId(rs.getInt("agenda_id"));
+                compromisso.setDataHoraNotificacao(rs.getTimestamp("data_hora_notificacao").toLocalDateTime());
+                
+                compromissos.add(compromisso);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return compromissos;
+    }
+    
+    public List<Compromisso> findByUserId(int userId) {
+        List<Compromisso> compromissos = new ArrayList<>();
+        String sql = "SELECT * FROM compromisso WHERE user_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                int compromissoId = rs.getInt("compromisso_id");
-                List<Integer> usuariosConvidados = getUsuariosConvidadosByCompromissoId(compromissoId);
-
-                Compromisso compromisso = new Compromisso(
-                    rs.getInt("compromisso_id"),
-                    rs.getString("titulo"),
-                    rs.getString("descricao"),
-                    rs.getTimestamp("data_hora_inicio").toLocalDateTime(),
-                    rs.getTimestamp("data_hora_fim").toLocalDateTime(),
-                    rs.getString("local"),
-                    rs.getInt("agenda_id"),
-                    usuariosConvidados,
-                    rs.getTimestamp("data_hora_notificacao").toLocalDateTime()
-                );
+                Compromisso compromisso = new Compromisso();
+                compromisso.setId(rs.getInt("compromisso_id"));
+                compromisso.setTitulo(rs.getString("titulo"));
+                compromisso.setDescricao(rs.getString("descricao"));
+                compromisso.setDataHoraInicio(rs.getTimestamp("data_hora_inicio").toLocalDateTime());
+                compromisso.setDataHoraTermino(rs.getTimestamp("data_hora_fim").toLocalDateTime());
+                compromisso.setLocal(rs.getString("local"));
+                compromisso.setAgendaId(rs.getInt("agenda_id"));
                 compromissos.add(compromisso);
             }
         } catch (SQLException e) {

@@ -6,8 +6,6 @@ public class Agenda {
     private String descricao;
     private int userId;
 
-    // Construtor
-    
     public Agenda(int id, String nome, String descricao, int userId) {
         this.id = id;
         this.nome = nome;
@@ -18,7 +16,6 @@ public class Agenda {
       
     }
 
-    // Getters e Setters
     public int getId() {
         return id;
     }

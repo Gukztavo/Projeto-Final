@@ -96,6 +96,7 @@ public class LoginView extends JFrame {
             
             NotificacaoCompromisso checker = new NotificacaoCompromisso(usuario.getId(), compromissoDAO);
             Thread checkerThread = new Thread(checker);
+            checkerThread.setDaemon(true); 
             checkerThread.start();
             
             dispose();

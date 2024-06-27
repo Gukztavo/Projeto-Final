@@ -16,10 +16,9 @@ public class LoginController {
             	NotificacaoCompromisso checker = new NotificacaoCompromisso(user.getId(), compromissoDAO);
                 Thread checkerThread = new Thread(checker);
                 checkerThread.start();
-                // Continue com o processo de login
             }
         } else {
-            // Falha na autenticação
+            
         }
     }
 }

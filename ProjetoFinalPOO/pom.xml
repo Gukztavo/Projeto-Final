@@ -23,10 +23,10 @@
         
         <!-- Dependência do JCalendar -->
         <dependency>
-		    <groupId>com.toedter</groupId>
-		    <artifactId>jcalendar</artifactId>
-		    <version>1.4</version>
-		</dependency>
+            <groupId>com.toedter</groupId>
+            <artifactId>jcalendar</artifactId>
+            <version>1.4</version>
+        </dependency>
         
         <!-- Dependência do SwingX (exemplo de biblioteca Swing adicional) -->
         <dependency>
@@ -78,7 +78,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.projetofinal.view.Main</mainClass>
+                            <mainClass>com.projetofinal.main.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

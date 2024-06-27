@@ -43,10 +43,9 @@ public class AgendaView extends JFrame {
     	try {
         	UIManager.setLookAndFeel(new NimbusLookAndFeel());
 
-            UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
-            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
-            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
-            // UIManager.setLookAndFeel(new WindowsLookAndFeel());
+            UIManager.put("nimbusBase", new Color(255, 255, 255)); 
+            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); 
+            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); 
         } catch (Exception e) {
             System.err.println("Erro ao aplicar tema: " + e.getMessage());
         }
@@ -133,7 +132,7 @@ public class AgendaView extends JFrame {
         List<Agenda> agendas = agendaController.getAllAgendas(usuario.getId());
         textArea.setText("");
         for (Agenda agenda : agendas) {
-            textArea.append("ID: " + agenda.getId() + ", Nome: " + agenda.getNome() + ", Descri��o: "
+            textArea.append("ID: " + agenda.getId() + ", Nome: " + agenda.getNome() + ", Descrição: "
                     + agenda.getDescricao() + "\n");
         }
     }

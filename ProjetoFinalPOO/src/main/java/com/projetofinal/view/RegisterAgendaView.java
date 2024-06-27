@@ -16,7 +16,7 @@ public class RegisterAgendaView extends JFrame {
     private AgendaController agendaController;
     private AgendaDAO agendaDAO;
     private Agenda agenda;
-    private AgendaView agendaView; // Refer�ncia para AgendaView
+    private AgendaView agendaView; 
 
     private JTextField tfNome;
     private JTextArea taDescricao;
@@ -24,21 +24,18 @@ public class RegisterAgendaView extends JFrame {
     public RegisterAgendaView(AgendaController agendaController, AgendaDAO agendaDAO, int agendaId, AgendaView agendaView) {
     	
     	try {
-            // Aplicar tema Metal
         	UIManager.setLookAndFeel(new NimbusLookAndFeel());
 
-            // Customize NimbusLookAndFeel
-            UIManager.put("nimbusBase", new Color(255, 255, 255)); // Set background color to white
-            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); // Set blue-grey color to dark grey
-            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); // Set font to Arial bold 14
-            // UIManager.setLookAndFeel(new WindowsLookAndFeel());
+            UIManager.put("nimbusBase", new Color(255, 255, 255)); 
+            UIManager.put("nimbusBlueGrey", new Color(137, 177, 177)); 
+            UIManager.put("controlFont", new Font("Arial", Font.BOLD, 14)); 
         } catch (Exception e) {
             System.err.println("Erro ao aplicar tema: " + e.getMessage());
         }
     	
         this.agendaController = agendaController;
         this.agendaDAO = agendaDAO;
-        this.agendaView = agendaView; // Inicializar a refer�ncia para AgendaView
+        this.agendaView = agendaView; 
 
         this.agenda = agendaDAO.read(agendaId);
         if (this.agenda == null) {
@@ -105,7 +102,7 @@ public class RegisterAgendaView extends JFrame {
         }
 
         JOptionPane.showMessageDialog(this, "Dados da agenda salvos com sucesso!");
-        agendaView.updateTextArea(); // Atualizar a �rea de texto em AgendaView
+        agendaView.updateTextArea();
         dispose();
     }
 }
